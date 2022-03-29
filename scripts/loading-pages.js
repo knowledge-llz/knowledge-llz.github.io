@@ -144,8 +144,8 @@ hexo.extend.filter.register('after_render:html', function (htmlContent) {
          <div></div>
      </div>
  </div>`;
-    if (/<\ head>/gi.test(htmlContent)) {
-        let lastIndex = htmlContent.lastIndexOf('');
+    if (/<\/head>/gi.test(htmlContent)) {
+        let lastIndex = htmlContent.lastIndexOf('</head>');
         htmlContent = htmlContent.substring(0, lastIndex) + injectHead + htmlContent.substring(lastIndex, htmlContent.length);
     }
     if (/<body>/gi.test(htmlContent)) {
@@ -154,4 +154,3 @@ hexo.extend.filter.register('after_render:html', function (htmlContent) {
     }
     return htmlContent;
 }, 1);
-</body></body></\>

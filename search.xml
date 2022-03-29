@@ -8,15 +8,9 @@
       <link href="/2022/03/29/test/"/>
       <url>/2022/03/29/test/</url>
       
-        <content type="html"><![CDATA[<p>我把狗子埋在这里</p><p><img src="/1.JPG" alt="1"></p>]]></content>
+        <content type="html"><![CDATA[<p>我把狗子埋在这里<br><img src="/2022/03/29/test/1.JPG"></p>]]></content>
       
       
-      
-        <tags>
-            
-            <tag> test </tag>
-            
-        </tags>
       
     </entry>
     
