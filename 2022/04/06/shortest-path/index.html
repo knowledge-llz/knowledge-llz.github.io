@@ -456,8 +456,8 @@
                                 <span class="chip bg-color">floyed</span>
                             </a>
                         
-                            <a href="/tags/%E5%89%B2%E7%82%B9/">
-                                <span class="chip bg-color">割点</span>
+                            <a href="/tags/SPFA/">
+                                <span class="chip bg-color">SPFA</span>
                             </a>
                         
                     </div>
@@ -488,14 +488,14 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-check fa-fw"></i>更新日期:&nbsp;&nbsp;
-                    2022-04-09
+                    2022-04-14
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    1.3k
+                    1.2k
                 </div>
                 
 
@@ -530,7 +530,8 @@
 </ol>
 <p>步骤2中，可以利用优先队列在$O(\log n)$时间复杂度内找到$x$。</p>
 <p>优先队列优化时间复杂度 $O(n\log n)$。</p>
-<h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><p>dijkstra无法处理负权边</p>
+<h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><p>dijkstra无法处理负权边，如下图所示，dijkstra算法跑出来$dis[3] &#x3D; 1$，但实际上$dis[3] &#x3D; -5$。</p>
+<p><img src="/shortest-path/dij.png" alt="dij"></p>
 <h3 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h3><pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;iostream></span></span>
 <span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;cstdio></span></span>
 <span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;cstring></span></span>
@@ -645,57 +646,37 @@ using namespace std<span class="token punctuation">;</span>
 	<span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>	
 <span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
-<h2 id="割点"><a href="#割点" class="headerlink" title="割点"></a>割点</h2><h3 id="算法简介-2"><a href="#算法简介-2" class="headerlink" title="算法简介"></a>算法简介</h3><p>如果无向图中删除某个点$u$，连通块数量增加，则$u$为图的一个割点；本算法用来找到图中所有割点。</p>
-<h3 id="算法思想-1"><a href="#算法思想-1" class="headerlink" title="算法思想"></a>算法思想</h3><p>利用时间戳概念在图中建立一个DFS树，用$dfn$数组存储每个点的时间戳，用$low$数组存储每个点能到达的最远的祖先，如果存在一个儿子节点$v$使得$low[v] \geq low[u]$，则$u$为割点。总时间复杂度为：$O(n)$。</p>
-<p>注意：dfs的第一个节点，如果只有一个儿子则不是割点，否则一定是一个割点。</p>
-<h2 id="代码-3"><a href="#代码-3" class="headerlink" title="代码"></a>代码</h2><pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">// https://www.luogu.com.cn/problem/P3388</span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;cstdio></span></span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;cstring></span></span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;iostream></span></span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;cmath></span></span>
-<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;vector></span></span>
-using namespace std<span class="token punctuation">;</span>
-<span class="token keyword">const</span> <span class="token keyword">int</span> maxx <span class="token operator">=</span> <span class="token number">2e5</span> <span class="token operator">+</span> <span class="token number">10</span><span class="token punctuation">;</span>
-<span class="token keyword">int</span> n<span class="token punctuation">,</span> m<span class="token punctuation">,</span> cnt<span class="token punctuation">,</span> ans<span class="token punctuation">,</span> dfn<span class="token punctuation">[</span>maxx<span class="token punctuation">]</span><span class="token punctuation">,</span> low<span class="token punctuation">[</span>maxx<span class="token punctuation">]</span><span class="token punctuation">;</span>
-vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">></span> edge<span class="token punctuation">[</span>maxx<span class="token punctuation">]</span><span class="token punctuation">;</span>
-bool cut<span class="token punctuation">[</span>maxx<span class="token punctuation">]</span><span class="token punctuation">;</span>
-<span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> id<span class="token punctuation">,</span> <span class="token keyword">int</span> fa<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
-	dfn<span class="token punctuation">[</span>id<span class="token punctuation">]</span> <span class="token operator">=</span> low<span class="token punctuation">[</span>id<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token operator">++</span>cnt<span class="token punctuation">;</span>
-	<span class="token keyword">int</span> son <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
-	<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">auto</span> u <span class="token operator">:</span> edge<span class="token punctuation">[</span>id<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
-		<span class="token keyword">if</span><span class="token punctuation">(</span>u <span class="token operator">==</span> fa<span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span>
-		<span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span>dfn<span class="token punctuation">[</span>u<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
-			<span class="token operator">++</span>son<span class="token punctuation">;</span>
-			<span class="token function">dfs</span><span class="token punctuation">(</span>u<span class="token punctuation">,</span> id<span class="token punctuation">)</span><span class="token punctuation">;</span>
-			low<span class="token punctuation">[</span>id<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>low<span class="token punctuation">[</span>id<span class="token punctuation">]</span><span class="token punctuation">,</span> low<span class="token punctuation">[</span>u<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-			<span class="token keyword">if</span><span class="token punctuation">(</span>low<span class="token punctuation">[</span>u<span class="token punctuation">]</span> <span class="token operator">>=</span> dfn<span class="token punctuation">[</span>id<span class="token punctuation">]</span><span class="token punctuation">)</span> cut<span class="token punctuation">[</span>id<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
-		<span class="token punctuation">&#125;</span>
-		<span class="token keyword">else</span> low<span class="token punctuation">[</span>id<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>low<span class="token punctuation">[</span>id<span class="token punctuation">]</span><span class="token punctuation">,</span> dfn<span class="token punctuation">[</span>u<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-	<span class="token punctuation">&#125;</span>	
-	<span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span>fa<span class="token punctuation">)</span> cut<span class="token punctuation">[</span>id<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span>son <span class="token operator">></span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span>
-<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
-	ios<span class="token operator">::</span><span class="token function">sync_with_stdio</span><span class="token punctuation">(</span>false<span class="token punctuation">)</span><span class="token punctuation">;</span> cin<span class="token punctuation">.</span><span class="token function">tie</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-	<span class="token function">freopen</span><span class="token punctuation">(</span><span class="token string">"input.in"</span><span class="token punctuation">,</span> <span class="token string">"r"</span><span class="token punctuation">,</span> <span class="token constant">stdin</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-	<span class="token function">freopen</span><span class="token punctuation">(</span><span class="token string">"output.out"</span><span class="token punctuation">,</span> <span class="token string">"w"</span><span class="token punctuation">,</span> <span class="token constant">stdout</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-	cin <span class="token operator">>></span> n <span class="token operator">>></span> m<span class="token punctuation">;</span>
-	<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> m<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
-		<span class="token keyword">int</span> u<span class="token punctuation">,</span> v<span class="token punctuation">;</span>
-		cin <span class="token operator">>></span> u <span class="token operator">>></span> v<span class="token punctuation">;</span>
-		edge<span class="token punctuation">[</span>u<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>v<span class="token punctuation">)</span><span class="token punctuation">;</span>
-		edge<span class="token punctuation">[</span>v<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>u<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<h2 id="SPFA"><a href="#SPFA" class="headerlink" title="SPFA"></a>SPFA</h2><h3 id="算法简介-2"><a href="#算法简介-2" class="headerlink" title="算法简介"></a>算法简介</h3><p>单源最短路问题</p>
+<h3 id="算法思想-1"><a href="#算法思想-1" class="headerlink" title="算法思想"></a>算法思想</h3><p>每次从队列从取出一个点，并将该点出队。用该点更新周围点的dis值，如果一个点的dis值能被更新，且这个点不在队列中，则将这个点加入队列。一直没有点的dis值能被更新，算法结束。</p>
+<p>时间复杂度非常玄学，通常情况下$O(n\log n)$，但最坏情况下会被卡到$O(n^2)$。</p>
+<p>虽然相比dijkstra算法，SPFA看起来死了，但是在存在负权边的情况，SPFA仍然能发挥作用。而且SPFA还可以判断图中是否有负权环，如果一个点进队超过$n$次，则图中一定存在一个负权环。</p>
+<h3 id="代码-3"><a href="#代码-3" class="headerlink" title="代码"></a>代码</h3><pre class="line-numbers language-c" data-language="c"><code class="language-c">queue<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">></span> q<span class="token punctuation">;</span>
+bool <span class="token function">spfa</span><span class="token punctuation">(</span><span class="token keyword">int</span> s<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+	<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+		dis<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> inf<span class="token punctuation">;</span>
+		p<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
 	<span class="token punctuation">&#125;</span>
-	<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span>
-		<span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span>dfn<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token function">dfs</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-	<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> 
-		<span class="token keyword">if</span><span class="token punctuation">(</span>cut<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
-			<span class="token operator">++</span>ans<span class="token punctuation">;</span>
-			edge<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	dis<span class="token punctuation">[</span>s<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> q<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">while</span><span class="token punctuation">(</span><span class="token operator">!</span>q<span class="token punctuation">.</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+		LL u <span class="token operator">=</span> q<span class="token punctuation">.</span><span class="token function">front</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> q<span class="token punctuation">.</span><span class="token function">pop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		p<span class="token punctuation">[</span>u<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> vis<span class="token punctuation">[</span>u<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+		<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">auto</span> x <span class="token operator">:</span> edge<span class="token punctuation">[</span>u<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+			LL v <span class="token operator">=</span> x<span class="token punctuation">.</span>first<span class="token punctuation">,</span> w <span class="token operator">=</span> x<span class="token punctuation">.</span>second<span class="token punctuation">;</span>
+			<span class="token keyword">if</span><span class="token punctuation">(</span>dis<span class="token punctuation">[</span>v<span class="token punctuation">]</span> <span class="token operator">></span> dis<span class="token punctuation">[</span>u<span class="token punctuation">]</span> <span class="token operator">+</span> w<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+				dis<span class="token punctuation">[</span>v<span class="token punctuation">]</span> <span class="token operator">=</span> dis<span class="token punctuation">[</span>u<span class="token punctuation">]</span> <span class="token operator">+</span> w<span class="token punctuation">;</span>
+				<span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span>p<span class="token punctuation">[</span>v<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+					<span class="token keyword">if</span><span class="token punctuation">(</span>num<span class="token punctuation">[</span>v<span class="token punctuation">]</span> <span class="token operator">></span> n<span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+					q<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>v<span class="token punctuation">)</span><span class="token punctuation">;</span>
+					<span class="token operator">++</span>num<span class="token punctuation">[</span>v<span class="token punctuation">]</span><span class="token punctuation">;</span>
+					p<span class="token punctuation">[</span>v<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+				<span class="token punctuation">&#125;</span>
+			<span class="token punctuation">&#125;</span>
 		<span class="token punctuation">&#125;</span>
-	cout <span class="token operator">&lt;&lt;</span> ans <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
-	<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">auto</span> u <span class="token operator">:</span> edge<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span> cout <span class="token operator">&lt;&lt;</span> u <span class="token operator">&lt;&lt;</span> <span class="token string">" "</span><span class="token punctuation">;</span>
-	<span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+	<span class="token punctuation">&#125;</span>
+	<span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
 
 
                 
@@ -723,7 +704,7 @@ bool cut<span class="token punctuation">[</span>maxx<span class="token punctuati
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="http://knowledge-llz.github.io/2022/04/06/basic-graph-theory/">http://knowledge-llz.github.io/2022/04/06/basic-graph-theory/</a>
+                    <a href="http://knowledge-llz.github.io/2022/04/06/shortest-path/">http://knowledge-llz.github.io/2022/04/06/shortest-path/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -769,8 +750,8 @@ bool cut<span class="token punctuation">[</span>maxx<span class="token punctuati
                                     <span class="chip bg-color">floyed</span>
                                 </a>
                             
-                                <a href="/tags/%E5%89%B2%E7%82%B9/">
-                                    <span class="chip bg-color">割点</span>
+                                <a href="/tags/SPFA/">
+                                    <span class="chip bg-color">SPFA</span>
                                 </a>
                             
                         </div>
@@ -818,18 +799,17 @@ bool cut<span class="token punctuation">[</span>maxx<span class="token punctuati
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="far fa-dot-circle"></i>&nbsp;本篇
-            </div>
+                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
             <div class="card">
-                <a href="/2022/04/06/basic-graph-theory/">
+                <a href="/2022/04/14/tarjan/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/21.jpg" class="responsive-img" alt="basic graph theory">
+                        <img src="/medias/featureimages/11.jpg" class="responsive-img" alt="tarjan">
                         
-                        <span class="card-title">basic graph theory</span>
+                        <span class="card-title">tarjan</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -839,9 +819,9 @@ bool cut<span class="token punctuation">[</span>maxx<span class="token punctuati
                         
                     </div>
                     <div class="publish-info">
-                            <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2022-04-06
-                            </span>
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2022-04-14
+                        </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-bookmark fa-fw icon-category"></i>
@@ -854,20 +834,19 @@ bool cut<span class="token punctuation">[</span>maxx<span class="token punctuati
                         </span>
                     </div>
                 </div>
-
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/dijkstra/">
-                        <span class="chip bg-color">dijkstra</span>
-                    </a>
-                    
-                    <a href="/tags/floyed/">
-                        <span class="chip bg-color">floyed</span>
-                    </a>
-                    
                     <a href="/tags/%E5%89%B2%E7%82%B9/">
                         <span class="chip bg-color">割点</span>
+                    </a>
+                    
+                    <a href="/tags/%E6%A1%A5/">
+                        <span class="chip bg-color">桥</span>
+                    </a>
+                    
+                    <a href="/tags/tarjan/">
+                        <span class="chip bg-color">tarjan</span>
                     </a>
                     
                 </div>
@@ -1118,7 +1097,7 @@ bool cut<span class="token punctuation">[</span>maxx<span class="token punctuati
             <br>
             
                 &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                        class="white-color">7.1k</span>
+                        class="white-color">8.6k</span>
             
             
             

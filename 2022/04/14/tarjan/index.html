@@ -4,8 +4,9 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="Goodbye!, ACM,C++,algorithm">
-    <meta name="description" content="我把狗子埋在这里">
+    <meta name="keywords" content="tarjan, ACM,C++,algorithm">
+    <meta name="description" content="割点与桥算法简介如果无向图中删除某个点$u$，连通块数量增加，则$u$为图的一个割点；本算法用来找到图中所有割点；如果删除无向图的一条边 $e$，连通块数量增加，则称 $e$ 为桥。
+算法思想利用时间戳概念在图中建立一个DFS树，用$dfn">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="renderer" content="webkit|ie-stand|ie-comp">
@@ -17,7 +18,7 @@
     <!-- Global site tag (gtag.js) - Google Analytics -->
 
 
-    <title>Goodbye! | Knowledge</title>
+    <title>tarjan | Knowledge</title>
     <link rel="icon" type="image/png" href="/my_favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.min.css">
@@ -309,7 +310,7 @@
 <script src="/libs/cryptojs/crypto-js.min.js"></script>
 <script>
     (function() {
-        let pwd = 'da55125baf8df1bf4fe3228186dd682e47bd84083c33f1693d4a85fd75901530';
+        let pwd = '';
         if (pwd && pwd.length > 0) {
             if (pwd !== CryptoJS.SHA256(prompt('请输入访问本文章的密码')).toString(CryptoJS.enc.Hex)) {
                 alert('密码错误，将返回主页！');
@@ -322,12 +323,12 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/images/04.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/11.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
-                    <h1 class="description center-align post-title">Goodbye!</h1>
+                    <h1 class="description center-align post-title">tarjan</h1>
                 </div>
             </div>
         </div>
@@ -441,9 +442,21 @@
             <div class="row tag-cate">
                 <div class="col s7">
                     
-                          <div class="article-tag">
-                            <span class="chip bg-color">无标签</span>
-                          </div>
+                    <div class="article-tag">
+                        
+                            <a href="/tags/%E5%89%B2%E7%82%B9/">
+                                <span class="chip bg-color">割点</span>
+                            </a>
+                        
+                            <a href="/tags/%E6%A1%A5/">
+                                <span class="chip bg-color">桥</span>
+                            </a>
+                        
+                            <a href="/tags/tarjan/">
+                                <span class="chip bg-color">tarjan</span>
+                            </a>
+                        
+                    </div>
                     
                 </div>
                 <div class="col s5 right-align">
@@ -451,8 +464,8 @@
                     <div class="post-cate">
                         <i class="fas fa-bookmark fa-fw icon-category"></i>
                         
-                            <a href="/categories/memory/" class="post-category">
-                                memory
+                            <a href="/categories/%E5%9B%BE%E8%AE%BA/" class="post-category">
+                                图论
                             </a>
                         
                     </div>
@@ -464,21 +477,21 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
-                    2022-03-29
+                    2022-04-14
                 </div>
                 
 
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-check fa-fw"></i>更新日期:&nbsp;&nbsp;
-                    2022-04-07
+                    2022-04-14
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    331
+                    1.6k
                 </div>
                 
 
@@ -503,15 +516,162 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <p>我把狗子埋在这里<br><img src="/2022/03/29/test/1.JPG"></p>
-<hr>
-<p>我想起狗子是在一个清明的夜里。</p>
-<p>我回想起白天里走过的那片春天的草地，金色的阳光从树梢上泻下，这一边紫红色的花儿绽开连成了一片，另一边淡粉色的花瓣已凋零落了满地，不知从哪里飘来几声鸟鸣，好似好遥远的地方传来。我就是在这样一片旺盛的春意，勃勃的生机中，一下子想起了狗子，那只永远埋在上一个冬天的老鼠。</p>
-<p>狗子是从2020年6月13日买来的，2022年1月30日离开了我。在我所有的宠物中，超过了小飞侠、乖乖、<em>小飞侠</em>，在我生命中占用的时间是最长的。</p>
-<p>我从没有想过狗子能活这么久，也不曾想过它会以那样的方式离开我。</p>
-<p>我觉得我应该为它写下些什么，我害怕遗忘。</p>
-<p>于是我努力想去回忆什么，却又想不起什么。</p>
-<p>我只想起今天下午遇见一株顶着一朵白毛绒球的蒲公英，我愣住了几秒，走上去吹了一口气，那抹白色刹那间消散了，白色的花絮顺着风散了满天，最后淡得好似从未有过。</p>
+                <h2 id="割点与桥"><a href="#割点与桥" class="headerlink" title="割点与桥"></a>割点与桥</h2><h3 id="算法简介"><a href="#算法简介" class="headerlink" title="算法简介"></a>算法简介</h3><p>如果无向图中删除某个点$u$，连通块数量增加，则$u$为图的一个割点；本算法用来找到图中所有割点；如果删除无向图的一条边 $e$，连通块数量增加，则称 $e$ 为桥。</p>
+<h3 id="算法思想"><a href="#算法思想" class="headerlink" title="算法思想"></a>算法思想</h3><p>利用时间戳概念在图中建立一个DFS树，用$dfn$数组存储每个点的时间戳，用$low$数组存储每个点能到达的最远的祖先，如果<strong>存在一个儿子节点</strong>$v$使得$low[v] \geq low[u]$，则$u$为割点。总时间复杂度为：$O(n)$。如果 $low[v]&gt; dfn[u]$，则连接 u, v 的边为桥。</p>
+<p>注意：dfs的第一个节点，如果只有一个儿子则不是割点，否则一定是一个割点。</p>
+<h2 id="强连通分量"><a href="#强连通分量" class="headerlink" title="强连通分量"></a>强连通分量</h2><h3 id="算法简介-1"><a href="#算法简介-1" class="headerlink" title="算法简介"></a>算法简介</h3><p>该算法主要处理有向图的强连通分量问题。对于有向图中的一个强连通分量 (Strongly Connected Component，一个集合中的点相互可达) 可以看做一个点，这样有向图就构成一个DAG，更便于处理问题。</p>
+<h3 id="算法思想-1"><a href="#算法思想-1" class="headerlink" title="算法思想"></a>算法思想</h3><p>对一个图进行dfs，形成一棵dfs树，用dfn表示该点的时间戳，用low存储该点在dfs树中能到达的最远的祖先的时间戳，找到每个scc的第一个点。把每个点访问的点入栈，找到scc的第一个点时将栈中该点后的所有点倒出形成一个集合。</p>
+<p>scc的第一个点满足一个性质：$low[i]&#x3D;dfn[i]$。利用这个性质可以轻松找到该点，在dfs要时刻记得更新low值。对于i，如果连接的点未遍历过，则遍历该点，回溯时用儿子节点更新i的low:$low[i]&#x3D;min(low[son(i)],low[i])$。如果连接的点遍历过并且还未形成集合:$low[i]&#x3D;min(low[i],dfn[u])$。整个过程的时间复杂度为$O(N)$。</p>
+<p>注意：如果连接的点已经成环，则无法利用该点更新low值！</p>
+<p>dfs完毕后，枚举每个点并枚举旧图的边并连接新图的边，注意打一些标记，不要连成自环、重边。时间复杂度为$O(M)$。</p>
+<p>总时间复杂度为线性。</p>
+<h3 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h3><pre class="line-numbers language-none"><code class="language-none">#include&lt;stack&gt;
+int n,cnt,scc_cnt,dfn[2020],low[2020],scc[2020];
+bool vis[2020];
+&#x2F;&#x2F;dfn表示时间戳，low表示能到达的最小祖先，scc表示新集合的编号
+&#x2F;&#x2F;用结构体表示两个图
+struct MAP&#123;
+	int e,be[2020],to[maxx],ne[maxx],d[maxx];
+	MAP()&#123;e&#x3D;0;&#125;
+	void init()&#123;
+		For(i,0,e) to[i]&#x3D;ne[i]&#x3D;0;
+		For(i,0,n) be[i]&#x3D;d[i]&#x3D;0;
+		e&#x3D;0;
+	&#125;
+	void add(int x,int y)&#123;
+		to[++e]&#x3D;y;
+		ne[e]&#x3D;be[x];
+		be[x]&#x3D;e;
+		d[y]++;
+	&#125;
+&#125;New,Old;
+
+&#x2F;&#x2F;初始化
+void init()&#123;
+	ans&#x3D;cnt&#x3D;scc_cnt&#x3D;0;
+	For(i,0,n)&#123;
+		dfn[i]&#x3D;low[i]&#x3D;scc[i]&#x3D;vis[i]&#x3D;0;
+		c[i]&#x3D;oo;
+	&#125;
+	Old.init(); New.init();
+&#125;
+&#x2F;&#x2F;tarjan
+stack&lt;int&gt;s;
+void tarjan(int id)&#123;
+	s.push(id);
+	dfn[id]&#x3D;low[id]&#x3D;++cnt;
+	for(int i&#x3D;Old.be[id];i;i&#x3D;Old.ne[i])&#123;
+		int go&#x3D;Old.to[i];
+		if(!dfn[go])&#123;
+			tarjan(go);
+			low[id]&#x3D;min(low[id],low[go]);
+		&#125;
+		else if(!scc[go]) low[id]&#x3D;min(low[id],dfn[go]);
+	&#125;
+	if(low[id]&#x3D;&#x3D;dfn[id])&#123;
+		scc_cnt++;
+		while(1)&#123;
+			int x&#x3D;s.top(); s.pop();
+			scc[x]&#x3D;scc_cnt;
+			if(x&#x3D;&#x3D;id) break;
+		&#125;
+	&#125;
+&#125;
+&#x2F;&#x2F;建新图
+void build()&#123;
+	For(id,1,n)&#123;
+		vis[scc[id]]&#x3D;1;
+		for(int i&#x3D;Old.be[id];i;i&#x3D;Old.ne[i])&#123;
+			int go&#x3D;Old.to[i];
+			if(!vis[scc[go]])&#123;
+				New.add(scc[id],scc[go]);
+				vis[scc[go]]&#x3D;1;
+			&#125;
+		&#125;
+		for(int i&#x3D;Old.be[id];i;i&#x3D;Old.ne[i])	vis[Old.to[i]]&#x3D;0;
+		vis[scc[id]]&#x3D;0;
+	&#125;
+&#125;
+int main()
+&#123;
+	init();
+	For(i,1,n) if(!dfn[i]) tarjan(i);
+	build();
+	return 0;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="双连通分量"><a href="#双连通分量" class="headerlink" title="双连通分量"></a>双连通分量</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/a_forever_dream/article/details/103019013">推荐博客</a></p>
+<h3 id="算法简介-2"><a href="#算法简介-2" class="headerlink" title="算法简介"></a>算法简介</h3><p>默认为无向图</p>
+<p>点双连通分量：子图上任意两点存在至少两条不存在公共节点的路径，也可以说是不存在割点的子图</p>
+<p>边双连通分量：子图上任意两点存在至少两条不存在公共边的路径，也可以说是不存咋割边的子图</p>
+<p>点双连通分量与边双连通分量的异同：</p>
+<p>同：两者都是一个环</p>
+<p>异：可以用下图直接解释，整个图是一个边双连通分量，但不是点双连通分量，因为点3是一个割点。1,2,3是点双与边双，3,4,5也是点双与边双，但是合在一起1,2,3,4,5只是一个边双，即边双连通分量具有传递性，而点双连通分量不具有传递性。</p>
+<img src="tarjan/image-20220414225110955.png" alt="image-20220414225110955" style="zoom:50%;" />
+
+<h3 id="算法思想-2"><a href="#算法思想-2" class="headerlink" title="算法思想"></a>算法思想</h3><p>边双连通分量类似强分量算法类似处理即可。</p>
+<p>点双连通分量：开一个栈将边压入，当一个点判定为割点时，将栈中所有边弹出，这些边连接成一个点双连通分量。（注意代码中，弹栈的位置）</p>
+<h2 id="代码-1"><a href="#代码-1" class="headerlink" title="代码"></a>代码</h2><p>对一个连通图，输出割点，割边，点双连通个数，点双连通分量最多的边数</p>
+<p>题目链接：<a target="_blank" rel="noopener" href="http://121.48.165.90/contest/170/problem/J">http://121.48.165.90/contest/170/problem/J</a></p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;bits/stdc++.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">LL</span> <span class="token expression"><span class="token keyword">long</span> <span class="token keyword">long</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">endl</span> <span class="token char">'\n'</span></span>
+using namespace std<span class="token punctuation">;</span>
+<span class="token keyword">const</span> <span class="token keyword">int</span> N <span class="token operator">=</span> <span class="token number">2022</span><span class="token punctuation">;</span>
+<span class="token keyword">int</span> n<span class="token punctuation">,</span> m<span class="token punctuation">,</span> cnt<span class="token punctuation">,</span> num<span class="token punctuation">,</span> mx<span class="token punctuation">,</span> cut_edge<span class="token punctuation">,</span> cut_node<span class="token punctuation">,</span> dfn<span class="token punctuation">[</span>N<span class="token punctuation">]</span><span class="token punctuation">,</span> low<span class="token punctuation">[</span>N<span class="token punctuation">]</span><span class="token punctuation">,</span> edge_num<span class="token punctuation">[</span>N<span class="token punctuation">]</span><span class="token punctuation">,</span> sz<span class="token punctuation">[</span>N<span class="token punctuation">]</span><span class="token punctuation">;</span>
+vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">></span> edge<span class="token punctuation">[</span>N<span class="token punctuation">]</span><span class="token punctuation">;</span>
+stack<span class="token operator">&lt;</span>pair<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">>></span> st<span class="token punctuation">;</span>
+<span class="token keyword">void</span> <span class="token function">dfs</span><span class="token punctuation">(</span><span class="token keyword">int</span> id<span class="token punctuation">,</span> <span class="token keyword">int</span> fa<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+	dfn<span class="token punctuation">[</span>id<span class="token punctuation">]</span> <span class="token operator">=</span> low<span class="token punctuation">[</span>id<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token operator">++</span>cnt<span class="token punctuation">;</span>
+	bool if_cut_node <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+	<span class="token keyword">int</span> son <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+	<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">auto</span> u <span class="token operator">:</span> edge<span class="token punctuation">[</span>id<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+		<span class="token keyword">if</span><span class="token punctuation">(</span>u <span class="token operator">==</span> fa<span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span>
+		bool if_cut_edge <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+		<span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span>dfn<span class="token punctuation">[</span>u<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+			<span class="token operator">++</span>son<span class="token punctuation">;</span>
+			st<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span><span class="token function">make_pair</span><span class="token punctuation">(</span>id<span class="token punctuation">,</span> u<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+			<span class="token function">dfs</span><span class="token punctuation">(</span>u<span class="token punctuation">,</span> id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+			low<span class="token punctuation">[</span>id<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>low<span class="token punctuation">[</span>id<span class="token punctuation">]</span><span class="token punctuation">,</span> low<span class="token punctuation">[</span>u<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+			<span class="token keyword">if</span><span class="token punctuation">(</span>low<span class="token punctuation">[</span>u<span class="token punctuation">]</span> <span class="token operator">>=</span> dfn<span class="token punctuation">[</span>id<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+				if_cut_node <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+				<span class="token operator">++</span>num<span class="token punctuation">;</span>
+				<span class="token keyword">int</span> tmp <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+				<span class="token keyword">while</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+					pair<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">></span> e <span class="token operator">=</span> st<span class="token punctuation">.</span><span class="token function">top</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> st<span class="token punctuation">.</span><span class="token function">pop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+					mx <span class="token operator">=</span> <span class="token function">max</span><span class="token punctuation">(</span>mx<span class="token punctuation">,</span> <span class="token operator">++</span>tmp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+					<span class="token keyword">if</span><span class="token punctuation">(</span>e<span class="token punctuation">.</span>first <span class="token operator">==</span> id <span class="token operator">&amp;&amp;</span> e<span class="token punctuation">.</span>second <span class="token operator">==</span> u<span class="token punctuation">)</span> <span class="token keyword">break</span><span class="token punctuation">;</span>
+				<span class="token punctuation">&#125;</span>
+			<span class="token punctuation">&#125;</span>
+			<span class="token keyword">if</span><span class="token punctuation">(</span>low<span class="token punctuation">[</span>u<span class="token punctuation">]</span> <span class="token operator">></span> dfn<span class="token punctuation">[</span>id<span class="token punctuation">]</span><span class="token punctuation">)</span> if_cut_edge <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+		<span class="token punctuation">&#125;</span>
+		<span class="token keyword">else</span> <span class="token keyword">if</span><span class="token punctuation">(</span>dfn<span class="token punctuation">[</span>u<span class="token punctuation">]</span> <span class="token operator">&lt;</span> dfn<span class="token punctuation">[</span>id<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+			st<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span><span class="token function">make_pair</span><span class="token punctuation">(</span>id<span class="token punctuation">,</span> u<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+			low<span class="token punctuation">[</span>id<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>low<span class="token punctuation">[</span>id<span class="token punctuation">]</span><span class="token punctuation">,</span> dfn<span class="token punctuation">[</span>u<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token punctuation">&#125;</span>
+		<span class="token keyword">if</span><span class="token punctuation">(</span>if_cut_edge<span class="token punctuation">)</span> <span class="token operator">++</span>cut_edge<span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+	<span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span>fa<span class="token punctuation">)</span> cut_node <span class="token operator">+=</span> <span class="token punctuation">(</span>son <span class="token operator">></span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">else</span> <span class="token keyword">if</span><span class="token punctuation">(</span>if_cut_node<span class="token punctuation">)</span><span class="token punctuation">&#123;</span> <span class="token operator">++</span>cut_node<span class="token punctuation">;</span> <span class="token punctuation">&#125;</span><span class="token comment">//cout &lt;&lt; id &lt;&lt; endl; &#125;</span>
+<span class="token punctuation">&#125;</span>
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+	ios<span class="token operator">::</span><span class="token function">sync_with_stdio</span><span class="token punctuation">(</span>false<span class="token punctuation">)</span><span class="token punctuation">;</span> cin<span class="token punctuation">.</span><span class="token function">tie</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">ifndef</span> <span class="token expression">ONLINE_JUDGE</span></span>
+	<span class="token function">freopen</span><span class="token punctuation">(</span><span class="token string">"input.in"</span><span class="token punctuation">,</span> <span class="token string">"r"</span><span class="token punctuation">,</span> <span class="token constant">stdin</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">freopen</span><span class="token punctuation">(</span><span class="token string">"output.out"</span><span class="token punctuation">,</span> <span class="token string">"w"</span><span class="token punctuation">,</span> <span class="token constant">stdout</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">endif</span></span>
+	cin <span class="token operator">>></span> n <span class="token operator">>></span> m<span class="token punctuation">;</span>
+	<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">,</span> u<span class="token punctuation">,</span> v<span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> m<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+		cin <span class="token operator">>></span> u <span class="token operator">>></span> v<span class="token punctuation">;</span>
+		edge<span class="token punctuation">[</span>u<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>v<span class="token punctuation">)</span><span class="token punctuation">;</span>
+		edge<span class="token punctuation">[</span>v<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>u<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+	<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> n<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span>
+		<span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span>dfn<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token function">dfs</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ 	cout <span class="token operator">&lt;&lt;</span> cut_node <span class="token operator">&lt;&lt;</span> <span class="token string">" "</span> <span class="token operator">&lt;&lt;</span> cut_edge <span class="token operator">&lt;&lt;</span> <span class="token string">" "</span> <span class="token operator">&lt;&lt;</span> num <span class="token operator">&lt;&lt;</span> <span class="token string">" "</span> <span class="token operator">&lt;&lt;</span> mx<span class="token punctuation">;</span>
+	<span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
 
                 
             </div>
@@ -538,7 +698,7 @@
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="http://knowledge-llz.github.io/2022/03/29/test/">http://knowledge-llz.github.io/2022/03/29/test/</a>
+                    <a href="http://knowledge-llz.github.io/2022/04/14/tarjan/">http://knowledge-llz.github.io/2022/04/14/tarjan/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -575,7 +735,19 @@
                 <div class="post-meta__tag-list" style="display: inline-block;">
                     
                         <div class="article-tag">
-                            <span class="chip bg-color">无标签</span>
+                            
+                                <a href="/tags/%E5%89%B2%E7%82%B9/">
+                                    <span class="chip bg-color">割点</span>
+                                </a>
+                            
+                                <a href="/tags/%E6%A1%A5/">
+                                    <span class="chip bg-color">桥</span>
+                                </a>
+                            
+                                <a href="/tags/tarjan/">
+                                    <span class="chip bg-color">tarjan</span>
+                                </a>
+                            
                         </div>
                     
                 </div>
@@ -621,17 +793,18 @@
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+                <i class="far fa-dot-circle"></i>&nbsp;本篇
+            </div>
             <div class="card">
-                <a href="/2022/03/30/codeforces-1658-e/">
+                <a href="/2022/04/14/tarjan/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/7.jpg" class="responsive-img" alt="Codeforces Round 779 (Div. 2) problem E.Gojou and Matrix Game">
+                        <img src="/medias/featureimages/11.jpg" class="responsive-img" alt="tarjan">
                         
-                        <span class="card-title">Codeforces Round 779 (Div. 2) problem E.Gojou and Matrix Game</span>
+                        <span class="card-title">tarjan</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -641,30 +814,35 @@
                         
                     </div>
                     <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2022-03-30
-                        </span>
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-04-14
+                            </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-bookmark fa-fw icon-category"></i>
                             
-                            <a href="/categories/codeforces/" class="post-category">
-                                    codeforces
+                            <a href="/categories/%E5%9B%BE%E8%AE%BA/" class="post-category">
+                                    图论
                                 </a>
                             
                             
                         </span>
                     </div>
                 </div>
+
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/%E5%8D%9A%E5%BC%88%E8%AE%BA/">
-                        <span class="chip bg-color">博弈论</span>
+                    <a href="/tags/%E5%89%B2%E7%82%B9/">
+                        <span class="chip bg-color">割点</span>
                     </a>
                     
-                    <a href="/tags/%E6%95%B0%E8%AE%BA/">
-                        <span class="chip bg-color">数论</span>
+                    <a href="/tags/%E6%A1%A5/">
+                        <span class="chip bg-color">桥</span>
+                    </a>
+                    
+                    <a href="/tags/tarjan/">
+                        <span class="chip bg-color">tarjan</span>
                     </a>
                     
                 </div>
@@ -678,13 +856,13 @@
                 下一篇&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
-                <a href="/2022/03/27/hello-world/">
+                <a href="/2022/04/06/shortest-path/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/1.jpg" class="responsive-img" alt="Hello World">
+                        <img src="/medias/featureimages/21.jpg" class="responsive-img" alt="basic graph theory">
                         
-                        <span class="card-title">Hello World</span>
+                        <span class="card-title">basic graph theory</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -695,15 +873,35 @@
                     </div>
                     <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2022-03-27
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-04-06
                             </span>
                         <span class="publish-author">
                             
-                            <i class="fas fa-user fa-fw"></i>
-                            Knowledge
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E5%9B%BE%E8%AE%BA/" class="post-category">
+                                    图论
+                                </a>
+                            
                             
                         </span>
                     </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/dijkstra/">
+                        <span class="chip bg-color">dijkstra</span>
+                    </a>
+                    
+                    <a href="/tags/floyed/">
+                        <span class="chip bg-color">floyed</span>
+                    </a>
+                    
+                    <a href="/tags/SPFA/">
+                        <span class="chip bg-color">SPFA</span>
+                    </a>
+                    
                 </div>
                 
             </div>
