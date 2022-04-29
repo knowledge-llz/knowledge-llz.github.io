@@ -4,6 +4,31 @@
   
     
     <entry>
+      <title>科学上网教程</title>
+      <link href="/2022/04/29/v2ray/"/>
+      <url>/2022/04/29/v2ray/</url>
+      
+        <content type="html"><![CDATA[<p>分享一下如何科学上网。</p><h2 id="网站链接"><a href="#网站链接" class="headerlink" title="网站链接"></a>网站链接</h2><p>提示：本人只是分享以下网址，若读者在以下网站上当受骗，本人不负任何责任！</p><p><a href="https://b.luxury/waf/jkHsqC0nqBOsGvA52">几鸡机场</a>（可直接访问）</p><p><a href="https://xtls.space/#/login">XYLS</a>(可直接访问）</p><p><a href="https://qsbl.site/">奇少部落</a>（访问需梯子）</p><p><a href="https://xmrth.com/">https://xmrth.com/</a></p><h2 id="注册账号"><a href="#注册账号" class="headerlink" title="注册账号"></a>注册账号</h2><p>以几鸡机场为例，几鸡机场只要每天打卡签到，就可以获得一定流量，而且注册账号不需要验证邮箱，<del>所以可以乱填邮箱</del>（可以白嫖，但白嫖有些时候网速不一定能得到保证）。</p><p>注册后，进入账号页面：</p><p><img src="/2022/04/29/v2ray/image-20220429203301965.png"></p><p>点击签到按钮，获得每日流量。</p><h2 id="V2ray使用"><a href="#V2ray使用" class="headerlink" title="V2ray使用"></a>V2ray使用</h2><h3 id="工具下载"><a href="#工具下载" class="headerlink" title="工具下载"></a>工具下载</h3><p>有很多种网络代理工具，例如ssr、v2ray、trojan、clash等。进入机场网站，要注意该机场提供的有哪一些代理工具的服务。本文主要介绍v2ray的使用，安装包可私聊我。</p><h3 id="软件使用"><a href="#软件使用" class="headerlink" title="软件使用"></a>软件使用</h3><ol><li>首先将v2ray安装包解压到电脑的一个位置。进入后点击v2rayN.exe：</li></ol><img src="image-20220429204255266.png" style="zoom:67%;" /><ol start="2"><li>此时左下角会有一个蓝色图标，鼠标左键点击：</li></ol><p><img src="/2022/04/29/v2ray/image-20220429204529501.png"></p><ol start="3"><li><p>进入页面后，点击左上角【订阅】，再点击【订阅设置】：</p><p><img src="/2022/04/29/v2ray/image-20220429204810258.png"></p></li><li><p>在机场获得订阅链接（以几鸡机场为例）：</p></li></ol><img src="image-20220429205005361.png" alt="" style="zoom:67%;" /><ol start="5"><li><p>将订阅链接拷贝到v2ray的页面设置的地址栏，备注栏可以随便写：</p><img src="image-20220429205156104.png" alt="" style="zoom:67%;" /></li><li><p>点击确定后再回到首页，点击【订阅】后再点击更新【更新订阅】：</p></li></ol><img src="20220429205305713_LI.jpg" alt="" style="zoom:67%;" /><ol start="7"><li>等待一会直到下方信息栏提示“更新订阅结束”后，会显示服务器列表。单击选中一个服务器后，按回车键开启代理。当前使用的服务器前会显示一个对勾。</li></ol><img src="image-20220429205952327.png" alt="" style="zoom:67%;" /><p>也可以<strong>鼠标右键</strong>点击右下角图标，在服务器栏中选择服务器。</p><img src="image-20220429210351074.png" alt="" style="zoom:67%;" /><ol start="8"><li><p><strong>鼠标右键</strong>点击右下角图标，点击启用http代理，再选择代理模式，建议一般选择PAC模式。PAC模式表示PAC配置中的部分网站不使用代理，其他网站使用代理（即大部分国内网站不翻墙，国外网站才翻墙），全局模式表示所有网站都使用梯子（例如，在B站看港澳台地区番剧则需要使用全局模式），直连模式相当于不启用代理。</p><img src="image-20220429210646445.png" alt="" style="zoom:67%;" /></li><li><p>访问Youtube、pornhub等网站测试一下网速。</p></li></ol><h2 id="其他教程"><a href="#其他教程" class="headerlink" title="其他教程"></a>其他教程</h2><ol><li><p>不建议在一个机场网站中充太多费用，付费的话建议购买短期一个月，不要买长期。有些网站可能是骗子或者忽然跑路了。</p></li><li><p>本教程前面的网站仅供参考。翻墙之后，可以直接在Youtube上搜索翻墙、科学上网等关键字或者直接Google 机场链接，找到性价比高的代理网站。</p></li></ol>]]></content>
+      
+      
+      <categories>
+          
+          <category> vpn </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> vpn </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>21-birthday</title>
       <link href="/2022/04/27/21-birthday/"/>
       <url>/2022/04/27/21-birthday/</url>
