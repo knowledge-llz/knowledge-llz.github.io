@@ -1,0 +1,1349 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="信息检索学习笔记（一）, ACM,C++,algorithm">
+    <meta name="description" content="布尔检索信息检索基本概念信息检索定义： 从大规模非结构化数据（通常是文本）的集合中找出满足用户信息需求的资料的过程。
+数据类型分类
+
+结构化数据： 按照预定义的模型结构化或以预定义的方式组织的数据。例如，关系数据库。
+非结构化数据：既没有按">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>信息检索学习笔记（一） | Knowledge</title>
+    <link rel="icon" type="image/png" href="/my_favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery-3.6.0.min.js"></script>
+
+<meta name="generator" content="Hexo 6.1.0"></head>
+
+
+
+
+<body>
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/my_logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">Knowledge</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>首页</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>标签</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>分类</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>归档</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>关于</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>留言板</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>友情链接</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="搜索" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/my_logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">Knowledge</div>
+        <div class="logo-desc">
+            
+            share life
+            
+        </div>
+    </div>
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			首页
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			标签
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			分类
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			归档
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			关于
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			留言板
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			友情链接
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/knowledge-llz" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/knowledge-llz" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+<script src="/libs/cryptojs/crypto-js.min.js"></script>
+<script>
+    (function() {
+        let pwd = '';
+        if (pwd && pwd.length > 0) {
+            if (pwd !== CryptoJS.SHA256(prompt('请输入访问本文章的密码')).toString(CryptoJS.enc.Hex)) {
+                alert('密码错误，将返回主页！');
+                location.href = '/';
+            }
+        }
+    })();
+</script>
+
+
+
+
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/17.jpg')">
+    <div class="container" style="right: 0px;left: 0px;">
+        <div class="row">
+            <div class="col s12 m12 l12">
+                <div class="brand">
+                    <h1 class="description center-align post-title">信息检索学习笔记（一）</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<main class="post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/%E4%BF%A1%E6%81%AF%E6%A3%80%E7%B4%A2/">
+                                <span class="chip bg-color">信息检索</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/Information-Retrieval/" class="post-category">
+                                Information Retrieval
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
+                    2022-10-30
+                </div>
+                
+
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-check fa-fw"></i>更新日期:&nbsp;&nbsp;
+                    2022-11-05
+                </div>
+                
+
+                
+                <div class="info-break-policy">
+                    <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
+                    4.4k
+                </div>
+                
+
+                
+
+                
+                    <div id="busuanzi_container_page_pv" class="info-break-policy">
+                        <i class="far fa-eye fa-fw"></i>阅读次数:&nbsp;&nbsp;
+                        <span id="busuanzi_value_page_pv"></span>
+                    </div>
+				
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+        <!-- 是否加载使用自带的 prismjs. -->
+        <link rel="stylesheet" href="/libs/prism/prism.css">
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <h3 id="布尔检索"><a href="#布尔检索" class="headerlink" title="布尔检索"></a>布尔检索</h3><h4 id="信息检索基本概念"><a href="#信息检索基本概念" class="headerlink" title="信息检索基本概念"></a>信息检索基本概念</h4><p><strong>信息检索定义：</strong> 从大规模非结构化数据（通常是文本）的集合中找出满足用户信息需求的资料的过程。</p>
+<p><strong>数据类型分类</strong></p>
+<ol>
+<li>结构化数据： 按照预定义的模型结构化或以预定义的方式组织的数据。例如，关系数据库。</li>
+<li>非结构化数据：既没有按照预定义的数据模型进行结构化，也没有按照预定义的方式组织的数据。例如：文档、书籍。</li>
+<li>半结构化数据：介于完全结构化数据和完全无结构化数据之间的数据，例如：HTML文件，JSON文件。</li>
+</ol>
+<p><strong>检索规模</strong></p>
+<ol>
+<li>Web搜索 (web search)：大规模级别</li>
+<li>个人信息检索 (personal information search)：小规模级别</li>
+<li>企业、机构和特定领域 (domain-specific search)：中等规模</li>
+</ol>
+<h4 id="布尔检索模型"><a href="#布尔检索模型" class="headerlink" title="布尔检索模型"></a>布尔检索模型</h4><p><strong>关联矩阵</strong>(incidence matrix)：根据每个词项是否在文档中出现得到一个布尔值构成的词项-文档关联矩阵。</p>
+<p><img src="/2022/10/30/information-retrieval/image-20221030201309024.png" alt="关联矩阵"></p>
+<p><strong>功能</strong>：布尔检索模型接受布尔表达式查询，即通过AND&#x2F;OR&#x2F;NOT等逻辑运算符将词项连接的查询。</p>
+<p><strong>缺陷</strong>：非常占用存储容量，对于稍大一点的语料库，计算机无法存下。且矩阵具有高度稀疏性，非常浪费存储空间。</p>
+<h4 id="评估指标"><a href="#评估指标" class="headerlink" title="评估指标"></a>评估指标</h4><p><strong>正确率</strong>：返回结果中真正和信息需求相关的文档所占的百分比。</p>
+<p><strong>召回率</strong>：所有和信息需求相关的文档所占百分比。</p>
+<h4 id="倒排索引"><a href="#倒排索引" class="headerlink" title="倒排索引"></a>倒排索引</h4><p>由于关联矩阵大部分元素为0，我们很自然想到只记录矩阵中为1的元素会更好。</p>
+<p>每个词项都有一个记录出现该词项的所有文档的列表，该表中的每个元素记录的是词项在某文档中的一次出现信息，每个词项对应的整个表称为<strong>倒排表</strong>。</p>
+<p><img src="/2022/10/30/information-retrieval/image-20221030203307192.png" alt="倒排表"></p>
+<p><strong>倒排表存储方式</strong></p>
+<ol>
+<li>单链表：便于文档插入和更新</li>
+<li>变长数组：节省指针空间；连续内存存储可以充分利用缓存技术</li>
+</ol>
+<h4 id="合并算法"><a href="#合并算法" class="headerlink" title="合并算法"></a>合并算法</h4><p>对于两个词项的合并，令两个指针指向两个词项倒排表的头部，因为倒排表中ID是有序的，于是每次让指向ID小指针后移，如果两个指针指向ID相同时，则将ID输出到结果表中，因为每个指针只用扫一遍，如果两个倒排记录表大小分别为$x$和$y$，则时间复杂度为$O(x+y)$。</p>
+<p><img src="/2022/10/30/information-retrieval/image-20221030204255597.png" alt="合并算法"></p>
+<p>如果两个倒排记录表长度差距很大时，可以将短的倒排表中每个元素在长的倒排表中中二分查询，时间复杂度为$O(x\log y)$。</p>
+<h3 id="词项词典及倒排记录表"><a href="#词项词典及倒排记录表" class="headerlink" title="词项词典及倒排记录表"></a>词项词典及倒排记录表</h3><h4 id="字符序列的生成"><a href="#字符序列的生成" class="headerlink" title="字符序列的生成"></a>字符序列的生成</h4><p>文档处理的第一步一般是，将字节序列转换成线性的字符序列：</p>
+<ol>
+<li>正确判断出文档的编码方式（机器学习或者启发式方法或者手工选择）</li>
+<li>确定编码方式后，就可以将字节序列转换成字符序列，在此过程中还应该保存编码信息，因为该信息有时能帮助确定文档的语言种类。</li>
+</ol>
+<h4 id="文档单位的选择"><a href="#文档单位的选择" class="headerlink" title="文档单位的选择"></a>文档单位的选择</h4><p>存在<strong>索引粒度</strong>(indexing granularity)的问题：例如，是选择将每本书作为索引单位还是将每章或每段作为索引单位。</p>
+<ul>
+<li>索引粒度太小$\rightarrow$正确率高，召回率低</li>
+<li>索引粒度太大$\rightarrow$正确率低，召回率高</li>
+</ul>
+<h4 id="词条化"><a href="#词条化" class="headerlink" title="词条化"></a>词条化</h4><p>词条化是指将给定字符序列拆分成一系列子序列的过程。其中每个子序列称为一个**词条 **(token)。</p>
+<p><img src="/2022/10/30/information-retrieval/image-20221030210053563.png" alt="词条化示例"></p>
+<p>**词条类 **(type)：相同词条构成的集合。</p>
+<p>例如：<em>to sleep perchance to dream</em></p>
+<p>上面的句子有5个词条，4个词条类（两个to归为一类）</p>
+<h4 id="去除停用词"><a href="#去除停用词" class="headerlink" title="去除停用词"></a>去除停用词</h4><p><strong>停用词</strong>(stop word)：一些常见词在文档和用户需求进行匹配时价值并不太大，需要彻底从词汇表中去除。</p>
+<p><img src="/2022/10/30/information-retrieval/image-20221030214851349.png" alt="停用词表"></p>
+<p><strong>趋势</strong>：对于现代IR系统来说，不去除停用词所增加的开销没有那么大，趋势是从大停用表到小停用表，最后到不用停用词。</p>
+<h4 id="词项归一化"><a href="#词项归一化" class="headerlink" title="词项归一化"></a>词项归一化</h4><p><strong>词项归一化</strong>(token normalization)：将看起来不完全一致的多个词条归纳成一个等价类以便它们之间进行匹配的过程。</p>
+<ol>
+<li>最常规的做法是隐式的建立等价类，每类可以用其中的某个元素来命名。比如：anti-discriminatory和discriminatory。</li>
+</ol>
+<p>去除连字符的好处：</p>
+<ul>
+<li><p>一方面，等价类的建立是隐式的，而不需要事先计算出等价类的全部元素，在映射规则下输出相同结果的词项一起构成等价类集合</p>
+</li>
+<li><p>另一方面，仅仅构建“去除字符”这种映射规则也比较容易。当然，由于等价类是隐式存在的，所以构建“增加字符”并不容易。</p>
+</li>
+</ul>
+<ol start="2">
+<li>另一种建立等价类的方法是维持多个非归一化词条之间的关联关系。该方法可以扩展成手工建立同义词词表。</li>
+</ol>
+<p>等价类处理会遇到的问题：</p>
+<ul>
+<li>重音及变音符号问题</li>
+<li>大小写转换问题</li>
+<li>英语中独特的归一化做法。如，英式英语colour和美式英语color</li>
+<li>其他语言问题</li>
+</ul>
+<h4 id="词干还原和词形归并"><a href="#词干还原和词形归并" class="headerlink" title="词干还原和词形归并"></a>词干还原和词形归并</h4><p>**词干还原 (stemming)**：通常只的是一个很粗略的去除单词两段词缀的启发式过程，并且希望大部分时间他都能够达到这个正确目的，这个过程也常常包括去除派生词缀。</p>
+<p>**词形归并 (lemmatization)<strong>：利用词汇表和词形分析来去除屈折词缀，从而返回词的原形或词典中的词的过程，返回结果称为</strong>词元 (lemma)**。</p>
+<p>进行词干还原过程，会降低正确率，提升召回率，因为会扩充一部分词。</p>
+<h4 id="基于跳表的倒排记录表快速合并算法"><a href="#基于跳表的倒排记录表快速合并算法" class="headerlink" title="基于跳表的倒排记录表快速合并算法"></a>基于跳表的倒排记录表快速合并算法</h4><p>普通的倒排记录表快速合并算法需要时间复杂度：$O(x+y)$。但很多时候，我们不需要遍历每个值，我们可以一些位置上设置跳表指针，当一个指针对应的跳表指针比另一指针的ID还要小的情况，我们可以直接跳过一些位置。</p>
+<p>但是跳表只用于AND操作，不能用于OR操作。</p>
+<img src="image-20221030221625148.png" alt="跳表合并算法" style="zoom: 80%;" />
+
+<p>在什么位置上放置跳表？跳表越多，意味着跳跃步长越短；跳表越少，意味着跳跃机会越少。根据分块思想，$\sqrt P$处均匀放置跳指针是不错的选择，$P$是倒排记录表的长度。</p>
+<h4 id="含位置信息的倒排记录表及短语查询"><a href="#含位置信息的倒排记录表及短语查询" class="headerlink" title="含位置信息的倒排记录表及短语查询"></a>含位置信息的倒排记录表及短语查询</h4><p>很多复杂的或技术性的概念、机构名和产品名等都是由多个词语组成的复合词或短语中多个词看成一个整体，为支持短语的查询，只列出词项所在文档列表的倒排表不能满足要求。</p>
+<h5 id="1-二元词索引："><a href="#1-二元词索引：" class="headerlink" title="1. 二元词索引："></a>1. 二元词索引：</h5><p>**二元接续词对 (biword)**：将每个接续词对看成一个短语，将每个查询分成多个短查询处理。</p>
+<p>查询：<em>Stanford university palo alto</em></p>
+<p>布尔查询： <em>Stanford university <strong>AND</strong> university palo <strong>AND</strong> palo alto</em></p>
+<p>这种查询并不能保证位置一定连续，可能偶尔存在错误，但实际中错误可能性很小。</p>
+<h5 id="2-位置信息索引"><a href="#2-位置信息索引" class="headerlink" title="2. 位置信息索引"></a>2. 位置信息索引</h5><p>穷举所有二元词会大大增加词汇表的大小，实际常用的方法是<strong>位置信息索引 (positional index)</strong>.</p>
+<p><img src="/2022/10/30/information-retrieval/image-20221030223508707.png" alt="位置信息索引"></p>
+<p>有时我们需要计算出词之间的偏移距离，可以采用K词近邻搜索：</p>
+<img src="image-20221030223651576.png" alt="K词近邻搜索" style="zoom:80%;" />
+
+<p>上述算法中因为$p1,p2$指针只要扫一遍，所以查找的时间复杂度为线性复杂度$O(N)$。但是，输出结果可能很有很多，最坏情况下输出复杂度为$O(nk)$。但是考虑实际情况，很少有同一个词在一些相邻位置反复出现，所以最坏情况很难达到。</p>
+<h5 id="3-混合索引机制"><a href="#3-混合索引机制" class="headerlink" title="3. 混合索引机制"></a>3. 混合索引机制</h5><p>对某些查询只用短语索引或只使用二元词索引，而对其他短语查询则采用位置索引。</p>
+<ul>
+<li>短语索引所收录的那些较好的查询可以根据用户最近的访问行为日志统计得到，也就是说，它们往往是那些高频常见的查询。</li>
+<li>处理开销最大的短语查询往往是这样一些短语，他们中的每个词都非常常见，但是组合起来却相对很少见。</li>
+<li>虽然这些短语出现的不够频繁，但是通过短语索引后的处理效率会有更大的提高，所以也常常将这类短语加入短语索引中。</li>
+</ul>
+<h3 id="词典及容错式检查"><a href="#词典及容错式检查" class="headerlink" title="词典及容错式检查"></a>词典及容错式检查</h3><h4 id="词典搜索的数据结构"><a href="#词典搜索的数据结构" class="headerlink" title="词典搜索的数据结构"></a>词典搜索的数据结构</h4><p>哈希表方式和二叉搜索树的形式。</p>
+<h4 id="单通配符查询"><a href="#单通配符查询" class="headerlink" title="单通配符查询"></a>单通配符查询</h4><p>通配符查询适用于如下场景：</p>
+<p>(1)用户对查询的拼写不太确定。</p>
+<p>(2)用户知道某个查询词项可能有不同的拼写版本。</p>
+<p>(3)用户查找某个查询词项的所有变形，这些变形可能还做了词干还原，但是用户并不知道搜索引擎是否进行了词干还原。</p>
+<p>(4)用户不确定一个外来词或者短语的正确拼写形式。</p>
+<p>尾通配符查询：B树</p>
+<p>首通配符查询：反向B树</p>
+<p>一般单通配符查询：B树与反向B树的交集</p>
+<h4 id="轮排索引"><a href="#轮排索引" class="headerlink" title="轮排索引"></a>轮排索引</h4><p>引入字符$表示词项结束。</p>
+<p>例如，hello$\leftarrow$hello$、ello$h、llo$he、lo$hel…</p>
+<p>**轮排词汇表 (permuterm index)**：词项旋转的集合。</p>
+<p>查询示例 1（m*n）：关键是将查询旋转直到*号出现在末尾，即 n$m*。</p>
+<p>查询示例 2 （fi*mo*er）：对应查询 er$fi*，再过滤不含mo的词项。</p>
+<h4 id="k-gram索引"><a href="#k-gram索引" class="headerlink" title="k-gram索引"></a>k-gram索引</h4><p>一个k-gram索引代表由k个字符组成序列。</p>
+<p>例如：castal的3-gram包含$ca、cas、cat、ast、tle、le$</p>
+<p><img src="/2022/10/30/information-retrieval/image-20221030225559112.png" alt="k-gram索引"></p>
+<p>查询示例 1 (re*ve)：$re <strong>AND</strong> ve$</p>
+<p>查询示例 2 (red*)：$re <strong>AND</strong> red ，可能会对应到retired，还需要后过滤的过程。</p>
+<p>后过滤：利用原始查询对布尔查询的结果逐一过了。</p>
+<h4 id="拼写改正"><a href="#拼写改正" class="headerlink" title="拼写改正"></a>拼写改正</h4><h5 id="改正原则"><a href="#改正原则" class="headerlink" title="改正原则"></a>改正原则</h5><p>对于大多数<strong>拼写校正</strong>（spelling correction）算法而言，存在以下两个基本原则：</p>
+<p>(1)对于一个拼写错误的查询，在其可能的正确拼写中，选择距离“最近”的一个。</p>
+<p>(2)当两个正确拼写查询邻近度相等（或相近）时，选择更常见的那个。</p>
+<ul>
+<li>“更常见”可以通过统计各词项在文档集中出现的次数来获得。</li>
+<li>很多搜索引擎使用了另一种“更常见”的概念：使用所有其他用户输入的查询中出现最频繁的拼写形式作为最后的选择。</li>
+</ul>
+<h5 id="改正方法"><a href="#改正方法" class="headerlink" title="改正方法"></a>改正方法</h5><p>两种拼写校正的方法：</p>
+<ul>
+<li><p><strong>词项独立</strong>（isolated-term）：不管查询中包含多少个查询词项，每次只对单个查询词项进行校正，也就是说在校正时词项是相互独立的。</p>
+</li>
+<li><ul>
+<li>编辑距离方法</li>
+<li>k-gram重合度方法</li>
+</ul>
+</li>
+<li><p><strong>上下文敏感</strong>（context-sensitive）：结合查询全文进行改正</p>
+</li>
+</ul>
+<h5 id="编辑距离"><a href="#编辑距离" class="headerlink" title="编辑距离"></a>编辑距离</h5><p>两个字符串的编辑距离为通过以下操作将s1变为s2的最少操作数：</p>
+<ul>
+<li>将一个字符插入字符串</li>
+<li>从字符串中删除一个字符</li>
+<li>将字符串中的一个字符替换成另外一个字符</li>
+</ul>
+<p>基于这些操作的编辑距离有时也称为Levenshtein距离（Levenshtein distance）。</p>
+<p>非常简单的动态规划方程：$dp[i][j] &#x3D; min\{dp[i-1][j-1] + (s_1[i]&#x3D;&#x3D;s_2[j]), s[i-1][j], s[i][j - 1]\}$</p>
+<h5 id="k-gram索引-1"><a href="#k-gram索引-1" class="headerlink" title="k-gram索引"></a>k-gram索引</h5><p><img src="/2022/10/30/information-retrieval/image-20221030230746970.png" alt="k-gram索引"></p>
+<p>上表对应查询bord时扫描的2-gram索引表。</p>
+<p>定义 <strong>Jaccard系数</strong>：$|A\and B|&#x2F;|A\or B|$。</p>
+<p>$A$表示查询q的k-gram集合，$B$表示词汇表词项中的k-gram集合。</p>
+<p>例如，q&#x3D;bord扫描到第三排第三个boardroom时，分子命中了{bo,rd}两个元素，分母就等于A的3个元素加上B的8个元素再减去重复命中的2个元素，得$\frac{2}{8+3-2}$。</p>
+<p>设定一个阈值，如果计算得到的Jaccard系数超过阈值，则表示需要更正；否则继续扫描。</p>
+<h5 id="上下文敏感的拼写改正"><a href="#上下文敏感的拼写改正" class="headerlink" title="上下文敏感的拼写改正"></a>上下文敏感的拼写改正</h5><p>例如 flew form Beijing，三个词都是对的，但是结合上下文建议的拼写应该是flew from Beijing。这是词项独立的检索就无能为力了。</p>
+<p>一种简单的实现方法是：即使每个词都是对的，也为每个单词找到可能的拼写正确词，然后尝试对词语中每个词进行替换，对每个替换的短语进行查找，根据搜索引擎查到的文档数目情况，确定最后改正结果。</p>
+<h3 id="索引构建"><a href="#索引构建" class="headerlink" title="索引构建"></a>索引构建</h3><h4 id="硬件参数"><a href="#硬件参数" class="headerlink" title="硬件参数"></a>硬件参数</h4><img src="image-20221030232216896.png" alt="2007年典型计算机系统参数" style="zoom:80%;" />
+
+<p>特点：</p>
+<ol>
+<li>访问内存数据比访问磁盘数据快得多。$5\times 10^{-9}s&gt;2\times 10^{-8}s$</li>
+<li>进行磁盘读写时，磁头移到数据所在磁道需要一定时间，称为寻道时间。$5ms$</li>
+<li>操作系统往往以数据块为单位进行读写。</li>
+</ol>
+<h4 id="基于块的排序索引方法"><a href="#基于块的排序索引方法" class="headerlink" title="基于块的排序索引方法"></a>基于块的排序索引方法</h4><p>由于内存不足，必须使用基于磁盘的外部排序算法（external sorting algorithm）。</p>
+<p>为了达到可以接受的速度，对该算法的核心要求是：在排序时尽量减少磁盘随机寻道的次数。</p>
+<p>BSBI（blocked sort-based indexing algorithm，基于块的排序索引算法）是一种解决办法：</p>
+<ol>
+<li><p>将文档集分割成几个大小相等的部分</p>
+</li>
+<li><p>将每个部分的词项ID-文档ID对顺序</p>
+</li>
+<li><p>将中间产生的临时排序结果存放到磁盘中</p>
+</li>
+<li><p>将所有的中间文件合并成最终的索引</p>
+</li>
+</ol>
+<img src="image-20221030232852231.png" alt="基于块的排序算法" style="zoom:80%;" />
+
+<p>上述算法因为提前映射好了每个词项与ID的对应关系，所以在每一块处理好后，为了方便后续块与块之间合并，需要对每一个块进行排序，时间复杂度：$O(T\log T)$。</p>
+<h4 id="内存式单遍扫描索引构建方法"><a href="#内存式单遍扫描索引构建方法" class="headerlink" title="内存式单遍扫描索引构建方法"></a>内存式单遍扫描索引构建方法</h4><p>BSSI算法需要将词项对应映射到ID的数据结构，对于大规模数据来说，该数据结构会很大。</p>
+<p>SPIMI（single-pass in-memory indexing，内存式单遍扫描索引算法）省略了将文档转换成词项-文档ID的过程。取而代之的是，每次逐一扫描每个词，通过哈希表判断每个词是否第一次出现，如果不是第一次，则直接返回其倒排记录表；否则，加入词典，并建立新的倒排记录表。</p>
+<img src="image-20221030233940008.png" alt="SPIMI算法" style="zoom:80%;" />
+
+<p>优点：</p>
+<ul>
+<li>由于不需要排序操作，因此处理的速度更快，时间复杂度：$O(T)$</li>
+<li>由于保留了倒排记录表对词项的归属关系，因此能够节省内存，词项的ID也不需要保存。</li>
+</ul>
+<h4 id="分布式索引构建方法"><a href="#分布式索引构建方法" class="headerlink" title="分布式索引构建方法"></a>分布式索引构建方法</h4><p>Web搜索引擎通常使用<strong>分布式索引构建（distributed indexing）</strong>算法来构建索引，其索引结果也是分布式的，它往往按照词项或文档进行分割后分布在多台计算机上。</p>
+<p>分布式索引构建方法是<strong>MapReduce</strong>的一个应用。<strong>MapReduce</strong>是一个通用的分布式计算架构，它面向大规模计算机集群而设计。集群中的<strong>主控节点（master node）</strong>负责处理任务在工作节点上的分配和重分配。</p>
+<p>MapReduce中的map阶段和reduce阶段将计算任务划分成子任务块，一遍每个工作节点在短时间内快速处理。</p>
+<p><img src="/2022/10/30/information-retrieval/image-20221030234238517.png" alt="MapReduce分布式索引实例"></p>
+<h4 id="动态索引构建方法"><a href="#动态索引构建方法" class="headerlink" title="动态索引构建方法"></a>动态索引构建方法</h4><p>大部分文档集会随文档增加、删除或更新而不断变化，这也意味着要将新的词项加入词典，并对已有词项的倒排记录表进行更新。</p>
+<p>方法一：最简单的方法，周期性对文档集从头开始重构。</p>
+<p>方法二：保持两个索引，一个小的用于存储新文档信息的<strong>辅助索引（auxiliary index）</strong>，保存在内存中，另一个是大的主索引。每当辅助索引变得很大，内存无法存下时，就将它合并到主索引中。</p>
+<p>方法二中，合并到主索引时，若每个词项的倒排表能单独存成一个文件，则可以直接进行合并，然而由于绝大多数文件系统不能对大量文件高效处理，很多时候索引存成一个大文件。</p>
+<p>假设辅助索引大小为$n$，$T$是所有倒排记录数目，每次辅助索引满了就要合并，需要合并$O(\frac{T}{n})$，每次合并需要扫描所有文件，时间复杂度$O(\frac{T^2}{n})$。</p>
+<p>为了加快上述过程，可以考虑对数合并，引入$O(\log_2{\frac{T}{n}})$个索引，每个索引大小为$2^0n,2^1n,…$    </p>
+<img src="image-20221030235500157.png" alt="对数合并算法" style="zoom:80%;" />
+
+<p>由于每个倒排记录表在每层中只处理一次，时间复杂度为$O(T\log_2 {\frac{T}{n}})$。然而，因为索引个数变多，每次查询时也要合并$O(\log_2 n)$个索引的结果，查询速度会下降。</p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        文章作者:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">Knowledge</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        文章链接:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="http://knowledge-llz.github.io/2022/10/30/information-retrieval/">http://knowledge-llz.github.io/2022/10/30/information-retrieval/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        版权声明:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    本博客所有文章除特別声明外，均采用
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    许可协议。转载请注明来源
+                    <a href="/about" target="_blank">Knowledge</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>复制成功，请遵循本文的转载规则</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">查看</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/%E4%BF%A1%E6%81%AF%E6%A3%80%E7%B4%A2/">
+                                    <span class="chip bg-color">信息检索</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+            <div class="card">
+                <a href="/2022/11/05/information-retrieval-2/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/7.jpg" class="responsive-img" alt="信息检索导论笔记（二）">
+                        
+                        <span class="card-title">信息检索导论笔记（二）</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2022-11-05
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/Information-Retrieval/" class="post-category">
+                                    Information Retrieval
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/%E4%BF%A1%E6%81%AF%E6%A3%80%E7%B4%A2/">
+                        <span class="chip bg-color">信息检索</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/2022/10/29/elasticsearch/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/8.jpg" class="responsive-img" alt="elasticsearch 入门">
+                        
+                        <span class="card-title">elasticsearch 入门</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-10-29
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/elasticsearch/" class="post-category">
+                                    elasticsearch
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/elasticsearch/">
+                        <span class="chip bg-color">elasticsearch</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;目录</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4'
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+
+
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script>
+    MathJax.Hub.Config({
+        tex2jax: {inlineMath: [['$', '$'], ['\\(', '\\)']]}
+    });
+</script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+
+    <div class="container row center-align"
+         style="margin-bottom: 15px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2022</span>
+            
+            <a href="/about" target="_blank">Knowledge</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+                &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
+                        class="white-color">51.8k</span>
+            
+            
+            
+                
+            
+            
+                <span id="busuanzi_container_site_pv">
+                &nbsp;|&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;
+                    <span id="busuanzi_value_site_pv" class="white-color"></span>
+            </span>
+            
+            
+                <span id="busuanzi_container_site_uv">
+                &nbsp;|&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;
+                    <span id="busuanzi_value_site_uv" class="white-color"></span>
+            </span>
+            
+            <br>
+
+            <!-- 运行天数提醒. -->
+            
+                <span id="sitetime"> Loading ...</span>
+                <script>
+                    var calcSiteTime = function () {
+                        var seconds = 1000;
+                        var minutes = seconds * 60;
+                        var hours = minutes * 60;
+                        var days = hours * 24;
+                        var years = days * 365;
+                        var today = new Date();
+                        var startYear = "2022";
+                        var startMonth = "3";
+                        var startDate = "28";
+                        var startHour = "0";
+                        var startMinute = "0";
+                        var startSecond = "0";
+                        var todayYear = today.getFullYear();
+                        var todayMonth = today.getMonth() + 1;
+                        var todayDate = today.getDate();
+                        var todayHour = today.getHours();
+                        var todayMinute = today.getMinutes();
+                        var todaySecond = today.getSeconds();
+                        var t1 = Date.UTC(startYear, startMonth, startDate, startHour, startMinute, startSecond);
+                        var t2 = Date.UTC(todayYear, todayMonth, todayDate, todayHour, todayMinute, todaySecond);
+                        var diff = t2 - t1;
+                        var diffYears = Math.floor(diff / years);
+                        var diffDays = Math.floor((diff / days) - diffYears * 365);
+
+                        // 区分是否有年份.
+                        var language = 'zh-CN';
+                        if (startYear === String(todayYear)) {
+                            document.getElementById("year").innerHTML = todayYear;
+                            var daysTip = 'This site has been running for ' + diffDays + ' days';
+                            if (language === 'zh-CN') {
+                                daysTip = '本站已运行 ' + diffDays + ' 天';
+                            } else if (language === 'zh-HK') {
+                                daysTip = '本站已運行 ' + diffDays + ' 天';
+                            }
+                            document.getElementById("sitetime").innerHTML = daysTip;
+                        } else {
+                            document.getElementById("year").innerHTML = startYear + " - " + todayYear;
+                            var yearsAndDaysTip = 'This site has been running for ' + diffYears + ' years and '
+                                + diffDays + ' days';
+                            if (language === 'zh-CN') {
+                                yearsAndDaysTip = '本站已运行 ' + diffYears + ' 年 ' + diffDays + ' 天';
+                            } else if (language === 'zh-HK') {
+                                yearsAndDaysTip = '本站已運行 ' + diffYears + ' 年 ' + diffDays + ' 天';
+                            }
+                            document.getElementById("sitetime").innerHTML = yearsAndDaysTip;
+                        }
+                    }
+
+                    calcSiteTime();
+                </script>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/knowledge-llz" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+    <a href="mailto:925538513@qq.com" class="tooltipped" target="_blank" data-tooltip="邮件联系我" data-position="top" data-delay="50">
+        <i class="fas fa-envelope-open"></i>
+    </a>
+
+
+
+
+
+
+
+    <a href="tencent://AddContact/?fromId=50&fromSubId=1&subcmd=all&uin=925538513" class="tooltipped" target="_blank" data-tooltip="QQ联系我: 925538513" data-position="top" data-delay="50">
+        <i class="fab fa-qq"></i>
+    </a>
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;搜索</span>
+            <input type="search" id="searchInput" name="s" placeholder="请输入搜索的关键字"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    
+
+    
+
+    <!-- 雪花特效 -->
+    
+
+    <!-- 鼠标星星特效 -->
+    
+
+     
+        <script src="https://ssl.captcha.qq.com/TCaptcha.js"></script>
+        <script src="/libs/others/TencentCaptcha.js"></script>
+        <button id="TencentCaptcha" data-appid="xxxxxxxxxx" data-cbfn="callback" type="button" hidden></button>
+    
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+    <!--腾讯兔小巢-->
+    
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

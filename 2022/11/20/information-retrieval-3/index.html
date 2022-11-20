@@ -1,0 +1,1288 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="信息检索导论笔记（三）, ACM,C++,algorithm">
+    <meta name="description" content="相关反馈主要思想RF (relevance feedback) 相关反馈的主要思想：在信息检索过程中通过用户交互来提高最终的检索结果。
+基本过程
+用户提交一个简短的查询
+系统返回初次检索结果
+用户对部分结果进行标注，将它们标注为相关或不相关">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>信息检索导论笔记（三） | Knowledge</title>
+    <link rel="icon" type="image/png" href="/my_favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery-3.6.0.min.js"></script>
+
+<meta name="generator" content="Hexo 6.1.0"></head>
+
+
+
+
+<body>
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/my_logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">Knowledge</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>首页</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>标签</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>分类</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>归档</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>关于</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>留言板</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>友情链接</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="搜索" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/my_logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">Knowledge</div>
+        <div class="logo-desc">
+            
+            share life
+            
+        </div>
+    </div>
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			首页
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			标签
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			分类
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			归档
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			关于
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			留言板
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			友情链接
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/knowledge-llz" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/knowledge-llz" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+<script src="/libs/cryptojs/crypto-js.min.js"></script>
+<script>
+    (function() {
+        let pwd = '';
+        if (pwd && pwd.length > 0) {
+            if (pwd !== CryptoJS.SHA256(prompt('请输入访问本文章的密码')).toString(CryptoJS.enc.Hex)) {
+                alert('密码错误，将返回主页！');
+                location.href = '/';
+            }
+        }
+    })();
+</script>
+
+
+
+
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/21.jpg')">
+    <div class="container" style="right: 0px;left: 0px;">
+        <div class="row">
+            <div class="col s12 m12 l12">
+                <div class="brand">
+                    <h1 class="description center-align post-title">信息检索导论笔记（三）</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<main class="post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/%E4%BF%A1%E6%81%AF%E6%A3%80%E7%B4%A2/">
+                                <span class="chip bg-color">信息检索</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/Information-Retrieval/" class="post-category">
+                                Information Retrieval
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
+                    2022-11-20
+                </div>
+                
+
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-check fa-fw"></i>更新日期:&nbsp;&nbsp;
+                    2022-11-20
+                </div>
+                
+
+                
+                <div class="info-break-policy">
+                    <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
+                    2.9k
+                </div>
+                
+
+                
+
+                
+                    <div id="busuanzi_container_page_pv" class="info-break-policy">
+                        <i class="far fa-eye fa-fw"></i>阅读次数:&nbsp;&nbsp;
+                        <span id="busuanzi_value_page_pv"></span>
+                    </div>
+				
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+        <!-- 是否加载使用自带的 prismjs. -->
+        <link rel="stylesheet" href="/libs/prism/prism.css">
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <h3 id="相关反馈"><a href="#相关反馈" class="headerlink" title="相关反馈"></a>相关反馈</h3><h4 id="主要思想"><a href="#主要思想" class="headerlink" title="主要思想"></a>主要思想</h4><p>RF (relevance feedback) 相关反馈的主要思想：在信息检索过程中通过用户交互来提高最终的检索结果。</p>
+<h4 id="基本过程"><a href="#基本过程" class="headerlink" title="基本过程"></a><strong>基本过程</strong></h4><ol>
+<li>用户提交一个简短的查询</li>
+<li>系统返回初次检索结果</li>
+<li>用户对部分结果进行标注，将它们标注为相关或不相关</li>
+<li>系统基于用户的反馈计算出一个更好的查询来表示信息需求</li>
+<li>利用新查询系统返回新的检索结果</li>
+</ol>
+<h4 id="相关示例"><a href="#相关示例" class="headerlink" title="相关示例"></a><strong>相关示例</strong></h4><p>例如，用户搜索输入bike之后，可能图库会返回bike的车型、比赛海报、各式各样的车。用户可以将自己期望的结果标注为相关，系统会根据用户的标注信息再检索更多其他结果。</p>
+<p><img src="/2022/11/20/information-retrieval-3/image-20221120185055909.png" alt="相关反馈的示例"></p>
+<h4 id="Rocchio算法"><a href="#Rocchio算法" class="headerlink" title="Rocchio算法"></a>Rocchio算法</h4><p>假定我们要找到一个最优查询向量$\vec q$，它与相关文档相似度最大，与不相关文档相似度最小。若$C_r$表示相关文档集，$C_{nr}$表示不相关文档集，则最优向量为<br>$$<br>\vec q_{opt} &#x3D; argmax_\vec q [sim(\vec q, C_r)- sim( \vec q, c_{nr})]<br>$$<br>若采用余弦相似度计算，<br>$$<br>\vec q_{opt} &#x3D; \frac{1}{|C_r|}\sum_{d_j\in C_r}\vec d_{j}-\frac{1}{|C_{nr}|}\sum_{d_j\in C_{nr}}\vec d_{j}<br>$$<br>即，最优化查询向量等于相关文档的质心向量减去不相关文档的质心向量的差。</p>
+<p>但检索本身就是要找到相关文档，所有相关文档事先是未知的，所以这个公式没有啥用。</p>
+<p>Rocchio算法：假定我们有一个用户查询，并知道部分相关文档和不相关文档的信息，测可以通过如下公式得到修改后的查询向量$\vec q_m$<br>$$<br>\vec q_m &#x3D; \alpha \vec q_0 +\beta\frac{1}{|D_r|}\sum_{d_j\in D_r}\vec d_{j}-\gamma\frac{1}{|D_{nr}|}\sum_{d_j\in D_{nr}}\vec d_{j}<br>$$<br>其中，$\vec q_0$是原始查询向量，$D_r,D_{nr}$是用户标记的相关和不相关文档集合，$\alpha,\beta,\gamma$是上述三个向量权重系数。</p>
+<p>理解：修改后的新查询从$\vec q_0$开始，向着相关文档质心向量靠近一段距离，又同时离不相关文档远离一段距离。一般来说，正反馈比负反馈更有价值，因为有的时候用户标注的不相关文档与相关文档具有很高的相似性，用户只是因为少数几个词或者内容不够完整的原因将其标注为不相关。很多IR系统中，$\alpha&#x3D;1,\beta&#x3D;0.75,\gamma&#x3D;0.15$。存在一种做法是，只取检索系统返回结果排名最高的标记为不相关文档。</p>
+<h4 id="相关反馈的作用时机"><a href="#相关反馈的作用时机" class="headerlink" title="相关反馈的作用时机"></a>相关反馈的作用时机</h4><p>相关反馈的成功依赖于某些假设：</p>
+<ol>
+<li><p>用户必须要有足够的知识来建立一个不错的初始查询，该查询至少要在某种程度上接近需求文档。但是在某些情况下，仅仅使用相关反馈技术并不足以解决问题：</p>
+<ul>
+<li>拼写错误</li>
+<li>跨语言IR</li>
+<li>用户的词汇表和文档集的词汇表不匹配</li>
+</ul>
+</li>
+<li><p>相关反馈方法要求相关文档之间非常相似。如果相关文档包括多个不同子类，即它们在向量空间中可以聚成多个簇，那么Rocchio方法效果会不太好。这种问题可能发生的情形如下：</p>
+<ul>
+<li>文档子集之间使用不同的词汇表</li>
+<li>某个查询的答案集合本身就需要不同累的文档来组成</li>
+<li>通用概念的例子，它通常以多个具体概念的或关系来出现</li>
+</ul>
+</li>
+</ol>
+<h4 id="伪相关反馈与间接相关反馈"><a href="#伪相关反馈与间接相关反馈" class="headerlink" title="伪相关反馈与间接相关反馈"></a>伪相关反馈与间接相关反馈</h4><p><strong>伪相关反馈</strong>，pseudo relevance提供一种自动局部分析方法。它将相关反馈的人工操作部分自动化，因此用户不需要额外的交互就可以获得检索性能的提升。该方法首先进行正常的检索过程，返回最相关的文档构成初始集，然后假设排名最靠前的k篇文档是相关的，最后在此假设上像以往一样进行相关反馈。</p>
+<p><strong>间接相关反馈</strong>，也称为隐式相关反馈。隐式反馈不如显式反馈可靠，但是会比没有任何用户判定信息的伪相关反馈更有用。例如，在web中，对于某文档如果用户浏览次数越多，则它的排名越高。这种页面点击率数据的收集实际上是<strong>点击流挖掘</strong>(clickstream mining)的一种形式。</p>
+<h4 id="查询重构"><a href="#查询重构" class="headerlink" title="查询重构"></a>查询重构</h4><p>扩展查询的全局方法：</p>
+<ul>
+<li>简单辅助用户进行查询扩展</li>
+<li>采用人工词典的方法</li>
+<li>自动构建词典的方法</li>
+</ul>
+<h4 id="查询扩展"><a href="#查询扩展" class="headerlink" title="查询扩展"></a>查询扩展</h4><p>在查询扩展（query expansion）中，用户会对查询词或短语给出额外的输入信息。</p>
+<p>最普遍的查询扩展方法是通过某种形式的同义词词典进行全局分析。</p>
+<p>用于查询扩展的同义词词典构建方法如下：</p>
+<ul>
+<li>使用人工编辑的一部受控词汇表。例如UMLS系统。</li>
+<li>使用人工编纂的同义词词典。</li>
+<li>使用自动构建的同义词词典。</li>
+<li>基于查询日志挖掘进行查询重构。</li>
+</ul>
+<p>基于词典的查询扩展方法的有点是不需要用户输入任何信息。</p>
+<h4 id="同义词词典自动构建"><a href="#同义词词典自动构建" class="headerlink" title="同义词词典自动构建"></a>同义词词典自动构建</h4><p>两种实现方法：</p>
+<ul>
+<li>简单的使用词共现信息。（更健壮）</li>
+<li>采用浅层语法分析器来分析文本，得到词汇之间的语法关系或语法依存性。（更精确）</li>
+</ul>
+<h3 id="XML检索"><a href="#XML检索" class="headerlink" title="XML检索"></a>XML检索</h3><p>将IR与关系型数据库比较，IR系统一直从无结构的文本中检索信息，这里的无结构信息指的是不带标记的原始文本。</p>
+<p>但是，很多包含文本的结构化数据源最好通过结构化文档而不是关系型数据来建模。基于结构化文档的搜索称为结构化检索。</p>
+<h4 id="XML基本概念"><a href="#XML基本概念" class="headerlink" title="XML基本概念"></a>XML基本概念</h4><p>一篇XML文档是一个有序的带标签树，树上的每个节点都是一个XML元素（XML element），它由起始标签（tag）和结束标签来界定。</p>
+<pre class="line-numbers language-xml" data-language="xml"><code class="language-xml"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>play</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>author</span><span class="token punctuation">></span></span>Shakespeare<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>author</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>title</span><span class="token punctuation">></span></span>Macbeth<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>title</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>act</span> <span class="token attr-name">number</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>I<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>scene</span> <span class="token attr-name">number</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>vii<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>title</span><span class="token punctuation">></span></span>Macbeth’s castle<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>title</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>verse</span><span class="token punctuation">></span></span>Will I with wine and wassail ...<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>verse</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>scene</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>act</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>play</span><span class="token punctuation">></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p><img src="/2022/11/20/information-retrieval-3/image-20221120194413941.png" alt="xml文档对应的树结构"></p>
+<p>树的叶节点包含了一些文本，比如Shakespeare, Macbeth等。而树的内部节点包含对文档结构信息，如title, act等。</p>
+<p>访问和处理XML文档标准是XML DOM（文档对象模型）</p>
+<p>XPath是XML文档集中的路径表达式描述标准，路径也称为XML上下文。</p>
+<ul>
+<li>XPath表达式中的node表示选择满足该表达式的所有节点</li>
+<li>路径上前后元素间用斜杠“\”来分割</li>
+<li>双斜杠表示路径中可以插入任意多个元素。</li>
+<li>路径若以斜杠开始则表示该路径起始于根元素</li>
+<li>为便于表示，允许路径上的最后的元素是词汇表中的一个词项，并利用“#”号将其与前面的路径分隔开来。</li>
+</ul>
+<p>如果去掉XML文档的属性，也就是将XML文档中所有属性节点全部去掉，可以得到仅包含元素这一种类型节点的树结构。用同样的方法也可以将查询表示成树。</p>
+<p><img src="/2022/11/20/information-retrieval-3/image-20221120194942368.png" alt="将文档和查询表示成树结构"></p>
+<h4 id="挑战性问题"><a href="#挑战性问题" class="headerlink" title="挑战性问题"></a>挑战性问题</h4><p><strong>挑战一：用户希望返回文档的一部分(XML元素），而不像非结构化检索一样返回整个文档</strong></p>
+<p>检索策略：返回包含信息需求的最小单位。但确定查询应答的正确层次是非常困难的。</p>
+<p>方法一：将节点分组，形成多个互不重叠的伪文档。</p>
+<p>缺点：这些伪文档内容不连贯，对用户而言没有什么意义。</p>
+<p><img src="/2022/11/20/information-retrieval-3/image-20221120195618522.png" alt="将XML文档分割成不重叠的索引单位"></p>
+<p>方法二：“两步走”，使用最大的一个元素作为索引单位。然后对结果进行后处理。例如，对于上面莎士比亚剧本的例子，查询”Macbeth’s castle”，先以play为索引，找到Macbeth这个剧本，再在这个剧本下找到第一幕第7场可能是匹配最佳的子元素。</p>
+<p>缺点：对很多查询来说，分两步走的做法不能返回最优匹配子结构，因为整本书与查询的相关性不能代表子元素与查询的相关性。</p>
+<p>方法三：限制最少的方法是对所有元素建立索引。</p>
+<p>缺点：</p>
+<ul>
+<li>很多XML元素不是有意义的检索结果</li>
+<li>对所有元素建立索引意味着高度的冗杂性</li>
+</ul>
+<p><strong>挑战二：由于元素之间嵌套关系的存在，在结果排序中计算词频统计信息，必须要区分词项的不同上下文</strong></p>
+<p>方法：为XML每个上下文-词项对计算idf值</p>
+<p>缺点：会导致数据稀疏问题，很多上下文-词项对出现过少导致文档频率估计可靠性不足</p>
+<p>折中方案：在区分上下文时只考虑词项的父节点x，而不考虑从根节点到x路径上其他部分</p>
+<h4 id="基于向量空间模型的XML检索"><a href="#基于向量空间模型的XML检索" class="headerlink" title="基于向量空间模型的XML检索"></a>基于向量空间模型的XML检索</h4><p>一种实现方法是，对向量空间中的每一维都同时考虑单词及其在XML树中的位置信息。</p>
+<ol>
+<li>首先考虑每个文本节点并将它们分裂成多个节点，每个节点对应一个词</li>
+<li>将向量空间每一维定义为文档的词汇化子树，这些子树至少包含词汇表中的一个词项</li>
+<li>将查询和文档表示成词汇化子树空间上的向量，并进行计算</li>
+</ol>
+<p>由于每个词汇话子树看成一维，整个空间维数非常大，一个折中的方法是对所有的最终以单个词项结束的路径建立索引，即对所有XML上下文-词项对建立索引。</p>
+<p><img src="/2022/11/20/information-retrieval-3/image-20221120201042262.png" alt="词汇化子树"></p>
+<p>这种XML上下文-词项对被称为结构化词项，记为&lt;c,t&gt;，c表示XML上下文，t是词项。</p>
+<p>对于用户的查询，我们希望优先考虑与查询结构相匹配且中间节点数量较少的文档，一个简单的度量查询路径$c_q$与文档路径$c_d$相似度的指标是上下文相似度$C_R$，</p>
+<p><img src="/2022/11/20/information-retrieval-3/image-20221120201650066.png" alt="上下文相似度的计算"></p>
+<p>最终的文档得分计算：</p>
+<p>​    <img src="/2022/11/20/information-retrieval-3/image-20221120201734568.png" alt="文档得分计算"></p>
+<p><img src="/2022/11/20/information-retrieval-3/image-20221120201813992.png" alt="文档得分计算方法"></p>
+<p><img src="/2022/11/20/information-retrieval-3/image-20221120201855377.png" alt="对某个结构化词项查询的SIMNOMERGE评分示意"></p>
+<h4 id="XML检索的评价"><a href="#XML检索的评价" class="headerlink" title="XML检索的评价"></a>XML检索的评价</h4><p><strong>部件覆盖度（component coverage）</strong>评价的是返回元素在结构上是否正确，也就是说，其在树中的层次既不太高也不太低。部件覆盖度分为以下四种情况：</p>
+<ul>
+<li>精确覆盖（E）：所需求的信息是部件的主要主题，并且该部件是一个有意义的信息单位。</li>
+<li>覆盖度太小（S）：所需求的信息是部件的主要主题，但是该部件不是一个有意义（自包含）的信息单位。</li>
+<li>覆盖度太大（L）：所需求的信息在部件中，但不是主要主题。</li>
+<li>无覆盖（N）：所需求的信息不是部件的主题。</li>
+</ul>
+<p>主题相关性有四个层次：强相关（3）、较相关（2）、弱相关（1）和不相关（0）。</p>
+<p>每个部件在覆盖度和主题相关性两个方面都要进行判断，然后将判断结果组合成一个数字-字母编码。</p>
+<p>相关度-覆盖度组合量化方法：</p>
+<p><img src="/2022/11/20/information-retrieval-3/image-20221120202109790.png" alt="相关度与覆盖度组合量化"></p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        文章作者:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">Knowledge</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        文章链接:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="http://knowledge-llz.github.io/2022/11/20/information-retrieval-3/">http://knowledge-llz.github.io/2022/11/20/information-retrieval-3/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        版权声明:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    本博客所有文章除特別声明外，均采用
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    许可协议。转载请注明来源
+                    <a href="/about" target="_blank">Knowledge</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>复制成功，请遵循本文的转载规则</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">查看</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/%E4%BF%A1%E6%81%AF%E6%A3%80%E7%B4%A2/">
+                                    <span class="chip bg-color">信息检索</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="far fa-dot-circle"></i>&nbsp;本篇
+            </div>
+            <div class="card">
+                <a href="/2022/11/20/information-retrieval-3/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/21.jpg" class="responsive-img" alt="信息检索导论笔记（三）">
+                        
+                        <span class="card-title">信息检索导论笔记（三）</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-11-20
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/Information-Retrieval/" class="post-category">
+                                    Information Retrieval
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/%E4%BF%A1%E6%81%AF%E6%A3%80%E7%B4%A2/">
+                        <span class="chip bg-color">信息检索</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/2022/11/20/cs231n-3/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/20.jpg" class="responsive-img" alt="Stanford-cs231N笔记：训练神经网络">
+                        
+                        <span class="card-title">Stanford-cs231N笔记：训练神经网络</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-11-20
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/" class="post-category">
+                                    人工智能
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">
+                        <span class="chip bg-color">机器学习</span>
+                    </a>
+                    
+                    <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/">
+                        <span class="chip bg-color">计算机视觉</span>
+                    </a>
+                    
+                    <a href="/tags/KNN/">
+                        <span class="chip bg-color">KNN</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;目录</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4'
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+
+
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script>
+    MathJax.Hub.Config({
+        tex2jax: {inlineMath: [['$', '$'], ['\\(', '\\)']]}
+    });
+</script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+
+    <div class="container row center-align"
+         style="margin-bottom: 15px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2022</span>
+            
+            <a href="/about" target="_blank">Knowledge</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+                &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
+                        class="white-color">51.8k</span>
+            
+            
+            
+                
+            
+            
+                <span id="busuanzi_container_site_pv">
+                &nbsp;|&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;
+                    <span id="busuanzi_value_site_pv" class="white-color"></span>
+            </span>
+            
+            
+                <span id="busuanzi_container_site_uv">
+                &nbsp;|&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;
+                    <span id="busuanzi_value_site_uv" class="white-color"></span>
+            </span>
+            
+            <br>
+
+            <!-- 运行天数提醒. -->
+            
+                <span id="sitetime"> Loading ...</span>
+                <script>
+                    var calcSiteTime = function () {
+                        var seconds = 1000;
+                        var minutes = seconds * 60;
+                        var hours = minutes * 60;
+                        var days = hours * 24;
+                        var years = days * 365;
+                        var today = new Date();
+                        var startYear = "2022";
+                        var startMonth = "3";
+                        var startDate = "28";
+                        var startHour = "0";
+                        var startMinute = "0";
+                        var startSecond = "0";
+                        var todayYear = today.getFullYear();
+                        var todayMonth = today.getMonth() + 1;
+                        var todayDate = today.getDate();
+                        var todayHour = today.getHours();
+                        var todayMinute = today.getMinutes();
+                        var todaySecond = today.getSeconds();
+                        var t1 = Date.UTC(startYear, startMonth, startDate, startHour, startMinute, startSecond);
+                        var t2 = Date.UTC(todayYear, todayMonth, todayDate, todayHour, todayMinute, todaySecond);
+                        var diff = t2 - t1;
+                        var diffYears = Math.floor(diff / years);
+                        var diffDays = Math.floor((diff / days) - diffYears * 365);
+
+                        // 区分是否有年份.
+                        var language = 'zh-CN';
+                        if (startYear === String(todayYear)) {
+                            document.getElementById("year").innerHTML = todayYear;
+                            var daysTip = 'This site has been running for ' + diffDays + ' days';
+                            if (language === 'zh-CN') {
+                                daysTip = '本站已运行 ' + diffDays + ' 天';
+                            } else if (language === 'zh-HK') {
+                                daysTip = '本站已運行 ' + diffDays + ' 天';
+                            }
+                            document.getElementById("sitetime").innerHTML = daysTip;
+                        } else {
+                            document.getElementById("year").innerHTML = startYear + " - " + todayYear;
+                            var yearsAndDaysTip = 'This site has been running for ' + diffYears + ' years and '
+                                + diffDays + ' days';
+                            if (language === 'zh-CN') {
+                                yearsAndDaysTip = '本站已运行 ' + diffYears + ' 年 ' + diffDays + ' 天';
+                            } else if (language === 'zh-HK') {
+                                yearsAndDaysTip = '本站已運行 ' + diffYears + ' 年 ' + diffDays + ' 天';
+                            }
+                            document.getElementById("sitetime").innerHTML = yearsAndDaysTip;
+                        }
+                    }
+
+                    calcSiteTime();
+                </script>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/knowledge-llz" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+    <a href="mailto:925538513@qq.com" class="tooltipped" target="_blank" data-tooltip="邮件联系我" data-position="top" data-delay="50">
+        <i class="fas fa-envelope-open"></i>
+    </a>
+
+
+
+
+
+
+
+    <a href="tencent://AddContact/?fromId=50&fromSubId=1&subcmd=all&uin=925538513" class="tooltipped" target="_blank" data-tooltip="QQ联系我: 925538513" data-position="top" data-delay="50">
+        <i class="fab fa-qq"></i>
+    </a>
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;搜索</span>
+            <input type="search" id="searchInput" name="s" placeholder="请输入搜索的关键字"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    
+
+    
+
+    <!-- 雪花特效 -->
+    
+
+    <!-- 鼠标星星特效 -->
+    
+
+     
+        <script src="https://ssl.captcha.qq.com/TCaptcha.js"></script>
+        <script src="/libs/others/TencentCaptcha.js"></script>
+        <button id="TencentCaptcha" data-appid="xxxxxxxxxx" data-cbfn="callback" type="button" hidden></button>
+    
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+    <!--腾讯兔小巢-->
+    
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

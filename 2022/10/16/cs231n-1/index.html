@@ -1,0 +1,1630 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="Stanford-cs231N笔记（一）：KNN算法, ACM,C++,algorithm">
+    <meta name="description" content="图像分类任务
+目标：有一个固定分类标签的集合，输入一张图像，从标签集合中找到与图像对应的标签分配给输入图像。
+
+问题： 计算机看到的图像与人眼不同，彩色图像在计算机中只是存储RGB三信道像素值的数据结构。
+
+
+
+
+
+挑战：
+
+
+Viewpo">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>Stanford-cs231N笔记（一）：KNN算法 | Knowledge</title>
+    <link rel="icon" type="image/png" href="/my_favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery-3.6.0.min.js"></script>
+
+<meta name="generator" content="Hexo 6.1.0"></head>
+
+
+
+
+<body>
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/my_logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">Knowledge</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>首页</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>标签</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>分类</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>归档</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>关于</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>留言板</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>友情链接</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="搜索" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/my_logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">Knowledge</div>
+        <div class="logo-desc">
+            
+            share life
+            
+        </div>
+    </div>
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			首页
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			标签
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			分类
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			归档
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			关于
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			留言板
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			友情链接
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/knowledge-llz" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/knowledge-llz" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+<script src="/libs/cryptojs/crypto-js.min.js"></script>
+<script>
+    (function() {
+        let pwd = '';
+        if (pwd && pwd.length > 0) {
+            if (pwd !== CryptoJS.SHA256(prompt('请输入访问本文章的密码')).toString(CryptoJS.enc.Hex)) {
+                alert('密码错误，将返回主页！');
+                location.href = '/';
+            }
+        }
+    })();
+</script>
+
+
+
+
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/0.jpg')">
+    <div class="container" style="right: 0px;left: 0px;">
+        <div class="row">
+            <div class="col s12 m12 l12">
+                <div class="brand">
+                    <h1 class="description center-align post-title">Stanford-cs231N笔记（一）：KNN算法</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<main class="post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">
+                                <span class="chip bg-color">机器学习</span>
+                            </a>
+                        
+                            <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/">
+                                <span class="chip bg-color">计算机视觉</span>
+                            </a>
+                        
+                            <a href="/tags/KNN/">
+                                <span class="chip bg-color">KNN</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/" class="post-category">
+                                人工智能
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
+                    2022-10-16
+                </div>
+                
+
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-check fa-fw"></i>更新日期:&nbsp;&nbsp;
+                    2022-10-23
+                </div>
+                
+
+                
+                <div class="info-break-policy">
+                    <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
+                    3.8k
+                </div>
+                
+
+                
+
+                
+                    <div id="busuanzi_container_page_pv" class="info-break-policy">
+                        <i class="far fa-eye fa-fw"></i>阅读次数:&nbsp;&nbsp;
+                        <span id="busuanzi_value_page_pv"></span>
+                    </div>
+				
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+        <!-- 是否加载使用自带的 prismjs. -->
+        <link rel="stylesheet" href="/libs/prism/prism.css">
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <h3 id="图像分类任务"><a href="#图像分类任务" class="headerlink" title="图像分类任务"></a>图像分类任务</h3><ul>
+<li><p><strong>目标：</strong>有一个固定分类标签的集合，输入一张图像，从标签集合中找到与图像对应的标签分配给输入图像。</p>
+</li>
+<li><p><strong>问题：</strong> 计算机看到的图像与人眼不同，彩色图像在计算机中只是存储RGB三信道像素值的数据结构。</p>
+</li>
+</ul>
+<img src="cat.png" style="zoom:50%;" />
+
+<ul>
+<li><strong>挑战：</strong></li>
+</ul>
+<ol>
+<li>Viewpoint variation  视角变化</li>
+<li>Illumination  光照变化</li>
+<li>Deformation  形变</li>
+<li>Occlusion  遮挡</li>
+<li>Background Clutter  背景干扰</li>
+<li>Intraclass variation  类别间差异：同一类物体之间存在差异</li>
+</ol>
+<ul>
+<li><strong>数据驱动方式（Data-Driven Approach)：</strong></li>
+</ul>
+<ol>
+<li>收集图像和标签的训练集</li>
+<li>使用机器学习方法训练分类器</li>
+<li>用分类器预测新图像的标签，并作出评价。</li>
+</ol>
+<h3 id="Nearest-Neighbor分类器"><a href="#Nearest-Neighbor分类器" class="headerlink" title="Nearest Neighbor分类器"></a>Nearest Neighbor分类器</h3><h4 id="算法思想"><a href="#算法思想" class="headerlink" title="算法思想"></a>算法思想</h4><p>k-Nearest Neighbor算法感觉是一种非常暴力的算法，对于给定的测试集，遍历所有训练集，找到与训练集最接近的k个样本，最近的k个样本进行“投票”——即找到最近k个样本中出现次数最多的标签，并分配给该测试数据。</p>
+<h4 id="距离度量的选择"><a href="#距离度量的选择" class="headerlink" title="距离度量的选择"></a>距离度量的选择</h4><p>上述思想涉及到距离最接近的概念，如何定义两张图片的距离呢？课程中提到$L1$(曼哈顿距离)，$L2$(欧式距离)两种距离，都非常暴力地直接将两张图片像素值作差：</p>
+<p>$$L1: d_1(I_1, I_2) &#x3D; \sum_p |I_1^p - I_2^p|$$</p>
+<p>$$L2:d_2(I_1, I_2) &#x3D; \sum_p \sqrt{(I_1^p - I_2^p)^2}$$</p>
+<p><img src="/2022/10/16/cs231n-1/nneg.jpeg" alt="L1的计算示例"></p>
+<p>$L1$、$L2$的区别：</p>
+<ol>
+<li><p>$L1$距离跟坐标系选取有关，$L2$距离跟坐标系无关；如果输入特征向量时适用$L1$；如果输入通用向量时适用$L2$。</p>
+</li>
+<li><p>面对两个向量之间的差异时，$L2$比$L1$更不能容忍这些差异。</p>
+</li>
+</ol>
+<h4 id="k值的选择"><a href="#k值的选择" class="headerlink" title="k值的选择"></a>k值的选择</h4><ul>
+<li><strong>k值的影响：</strong></li>
+</ul>
+<p>k值的选择反映了偏差和方差的权衡：k值越小，则模型复杂，偏差小和方差大（训练误差小，测试误差大），容易出现过拟合；k值越大，则模型简单，偏差大和方差小（训练误差大，测试误差小），容易出现欠拟合；因此一般通过交叉验证来选取较小的最优k值。</p>
+<ul>
+<li><strong><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/65687909">解释</a>：</strong></li>
+</ul>
+<ol>
+<li>如果选择较小的K值，就相当于用较小的领域中的训练实例进行预测，“学习”近似误差会减小，只有与输入实例较近或相似的训练实例才会对预测结果起作用，与此同时带来的问题是“学习”的估计误差会增大，换句话说，K值的减小就意味着整体模型变得复杂，容易发生过拟合， （偏差小方差大）</li>
+<li>如果选择较大的K值，就相当于用较大领域中的训练实例进行预测，其优点是可以减少学习的估计误差，但缺点是学习的近似误差会增大。这时候，与输入实例较远（不相似的）训练实例也会对预测器作用，使预测发生错误，且K值的增大就意味着整体的模型变得简单。</li>
+</ol>
+<h4 id="超参数的确定"><a href="#超参数的确定" class="headerlink" title="超参数的确定"></a>超参数的确定</h4><ul>
+<li><p>超参数：需要自行选择，不能由算法学习得到的参数。</p>
+</li>
+<li><p>KNN算法中的超参数：k值、距离度量(L1 or L2)</p>
+</li>
+<li><p>确定方式：将数据集分成训练集、验证集、测试集。通过验证集尝试调整不同超参数，最后在测试集上评估。</p>
+<p><img src="/2022/10/16/cs231n-1/split_data.jpg"></p>
+</li>
+<li><p>交叉验证方式：将数据集分成5份，其中4份用来训练，其中1份用来验证，并且循环利用每份作为验证集。</p>
+<p><img src="/2022/10/16/cs231n-1/cross-validation.jpg"></p>
+</li>
+</ul>
+<h3 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h3><h4 id="读入数据"><a href="#读入数据" class="headerlink" title="读入数据"></a>读入数据</h4><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token comment"># Load the raw CIFAR-10 data.</span>
+cifar10_dir <span class="token operator">=</span> <span class="token string">'cs231n/datasets/cifar-10-batches-py'</span>
+
+<span class="token comment"># Cleaning up variables to prevent loading data multiple times (which may cause memory issue)</span>
+<span class="token keyword">try</span><span class="token punctuation">:</span>
+   <span class="token keyword">del</span> X_train<span class="token punctuation">,</span> y_train
+   <span class="token keyword">del</span> X_test<span class="token punctuation">,</span> y_test
+   <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Clear previously loaded data.'</span><span class="token punctuation">)</span>
+<span class="token keyword">except</span><span class="token punctuation">:</span>
+   <span class="token keyword">pass</span>
+
+X_train<span class="token punctuation">,</span> y_train<span class="token punctuation">,</span> X_test<span class="token punctuation">,</span> y_test <span class="token operator">=</span> load_CIFAR10<span class="token punctuation">(</span>cifar10_dir<span class="token punctuation">)</span>
+
+<span class="token comment"># As a sanity check, we print out the size of the training and test data.</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Training data shape: '</span><span class="token punctuation">,</span> X_train<span class="token punctuation">.</span>shape<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Training labels shape: '</span><span class="token punctuation">,</span> y_train<span class="token punctuation">.</span>shape<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Test data shape: '</span><span class="token punctuation">,</span> X_test<span class="token punctuation">.</span>shape<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Test labels shape: '</span><span class="token punctuation">,</span> y_test<span class="token punctuation">.</span>shape<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>Training data shape:  (50000, 32, 32, 3) </p>
+<p>Training labels shape:  (50000,) </p>
+<p>Test data shape:  (10000, 32, 32, 3) </p>
+<p>Test labels shape:  (10000,)</p>
+</blockquote>
+<p>可以发现每张图片是三信道32*32的矩阵。</p>
+<h4 id="可视化部分图片"><a href="#可视化部分图片" class="headerlink" title="可视化部分图片"></a>可视化部分图片</h4><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token comment"># Visualize some examples from the dataset.</span>
+<span class="token comment"># We show a few examples of training images from each class.</span>
+classes <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'plane'</span><span class="token punctuation">,</span> <span class="token string">'car'</span><span class="token punctuation">,</span> <span class="token string">'bird'</span><span class="token punctuation">,</span> <span class="token string">'cat'</span><span class="token punctuation">,</span> <span class="token string">'deer'</span><span class="token punctuation">,</span> <span class="token string">'dog'</span><span class="token punctuation">,</span> <span class="token string">'frog'</span><span class="token punctuation">,</span> <span class="token string">'horse'</span><span class="token punctuation">,</span> <span class="token string">'ship'</span><span class="token punctuation">,</span> <span class="token string">'truck'</span><span class="token punctuation">]</span>
+num_classes <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>classes<span class="token punctuation">)</span>
+samples_per_class <span class="token operator">=</span> <span class="token number">7</span>
+
+<span class="token keyword">for</span> y<span class="token punctuation">,</span> cls <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>classes<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    idxs <span class="token operator">=</span> np<span class="token punctuation">.</span>flatnonzero<span class="token punctuation">(</span>y_train <span class="token operator">==</span> y<span class="token punctuation">)</span>
+    idxs <span class="token operator">=</span> np<span class="token punctuation">.</span>random<span class="token punctuation">.</span>choice<span class="token punctuation">(</span>idxs<span class="token punctuation">,</span> samples_per_class<span class="token punctuation">,</span> replace<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">)</span> <span class="token comment"># 每类随机选7张图。 "repalce = False"表示不能选相同的</span>
+    <span class="token keyword">for</span> i<span class="token punctuation">,</span> idx <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>idxs<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        plt_idx <span class="token operator">=</span> i <span class="token operator">*</span> num_classes <span class="token operator">+</span> y <span class="token operator">+</span> <span class="token number">1</span> <span class="token comment"># 在图中的位置</span>
+        plt<span class="token punctuation">.</span>subplot<span class="token punctuation">(</span>samples_per_class<span class="token punctuation">,</span> num_classes<span class="token punctuation">,</span> plt_idx<span class="token punctuation">)</span> <span class="token comment"># 把图分成10 * 7个格子</span>
+        plt<span class="token punctuation">.</span>imshow<span class="token punctuation">(</span>X_train<span class="token punctuation">[</span>idx<span class="token punctuation">]</span><span class="token punctuation">.</span>astype<span class="token punctuation">(</span><span class="token string">'uint8'</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment"># 生成灰度图</span>
+        plt<span class="token punctuation">.</span>axis<span class="token punctuation">(</span><span class="token string">'off'</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> i <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>    <span class="token comment"># 在每列开头输出类别名</span>
+            plt<span class="token punctuation">.</span>title<span class="token punctuation">(</span>cls<span class="token punctuation">)</span>
+plt<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p><img src="/2022/10/16/cs231n-1/vis.png"></p>
+</blockquote>
+<h4 id="图像数据处理"><a href="#图像数据处理" class="headerlink" title="图像数据处理"></a>图像数据处理</h4><p>每张图是32 * 32 * 3的向量不方便处理，我们可以将高维向量变成一维进行存放。</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token comment"># Subsample the data for more efficient code execution in this exercise</span>
+num_training <span class="token operator">=</span> <span class="token number">5000</span>
+mask <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">range</span><span class="token punctuation">(</span>num_training<span class="token punctuation">)</span><span class="token punctuation">)</span>
+X_train <span class="token operator">=</span> X_train<span class="token punctuation">[</span>mask<span class="token punctuation">]</span>
+y_train <span class="token operator">=</span> y_train<span class="token punctuation">[</span>mask<span class="token punctuation">]</span>
+
+num_test <span class="token operator">=</span> <span class="token number">500</span>
+mask <span class="token operator">=</span> <span class="token builtin">list</span><span class="token punctuation">(</span><span class="token builtin">range</span><span class="token punctuation">(</span>num_test<span class="token punctuation">)</span><span class="token punctuation">)</span>
+X_test <span class="token operator">=</span> X_test<span class="token punctuation">[</span>mask<span class="token punctuation">]</span>
+y_test <span class="token operator">=</span> y_test<span class="token punctuation">[</span>mask<span class="token punctuation">]</span>
+<span class="token comment"># Reshape the image data into rows</span>
+X_train <span class="token operator">=</span> np<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span>X_train<span class="token punctuation">,</span> <span class="token punctuation">(</span>X_train<span class="token punctuation">.</span>shape<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+X_test <span class="token operator">=</span> np<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span>X_test<span class="token punctuation">,</span> <span class="token punctuation">(</span>X_test<span class="token punctuation">.</span>shape<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>X_train<span class="token punctuation">.</span>shape<span class="token punctuation">,</span> X_test<span class="token punctuation">.</span>shape<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>(5000, 3072) (500, 3072)</p>
+</blockquote>
+<p>操作后训练集变为了5000 * 3072的矩阵，测试集变为了500 * 3072的矩阵。</p>
+<h4 id="L2距离的计算"><a href="#L2距离的计算" class="headerlink" title="L2距离的计算"></a>L2距离的计算</h4><ul>
+<li>使用两层循环：$dist[i][j]$表示第i个测试数据与第j个训练数据的距离。</li>
+</ul>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">compute_distances_two_loops</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> X<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    Compute the distance between each test point in X and each training point
+    in self.X_train using a nested loop over both the training data and the
+    test data.
+
+    Inputs:
+    - X: A numpy array of shape (num_test, D) containing test data.
+
+    Returns:
+    - dists: A numpy array of shape (num_test, num_train) where dists[i, j]
+      is the Euclidean distance between the ith test point and the jth training
+      point.
+    """</span>
+    num_test <span class="token operator">=</span> X<span class="token punctuation">.</span>shape<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+    num_train <span class="token operator">=</span> self<span class="token punctuation">.</span>X_train<span class="token punctuation">.</span>shape<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+    dists <span class="token operator">=</span> np<span class="token punctuation">.</span>zeros<span class="token punctuation">(</span><span class="token punctuation">(</span>num_test<span class="token punctuation">,</span> num_train<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>num_test<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>num_train<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token comment"># *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****</span>
+            dists<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> np<span class="token punctuation">.</span>sqrt<span class="token punctuation">(</span>np<span class="token punctuation">.</span><span class="token builtin">sum</span><span class="token punctuation">(</span>np<span class="token punctuation">.</span>square<span class="token punctuation">(</span>X<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> self<span class="token punctuation">.</span>X_train<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+            <span class="token comment"># *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****</span>
+    <span class="token keyword">return</span> dists<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+<ul>
+<li><p>使用一层循环：使用numpy函数少写一层循环（但复杂度没变）</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">compute_distances_one_loop</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> X<span class="token punctuation">)</span><span class="token punctuation">:</span>
+     <span class="token triple-quoted-string string">"""
+     Compute the distance between each test point in X and each training point
+     in self.X_train using a single loop over the test data.
+  
+     Input / Output: Same as compute_distances_two_loops
+     """</span>
+     num_test <span class="token operator">=</span> X<span class="token punctuation">.</span>shape<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+     num_train <span class="token operator">=</span> self<span class="token punctuation">.</span>X_train<span class="token punctuation">.</span>shape<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+     dists <span class="token operator">=</span> np<span class="token punctuation">.</span>zeros<span class="token punctuation">(</span><span class="token punctuation">(</span>num_test<span class="token punctuation">,</span> num_train<span class="token punctuation">)</span><span class="token punctuation">)</span>
+     <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>num_test<span class="token punctuation">)</span><span class="token punctuation">:</span>
+         <span class="token comment"># *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****</span>
+         dists<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> np<span class="token punctuation">.</span>sqrt<span class="token punctuation">(</span>np<span class="token punctuation">.</span><span class="token builtin">sum</span><span class="token punctuation">(</span>np<span class="token punctuation">.</span>square<span class="token punctuation">(</span>X<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> self<span class="token punctuation">.</span>X_train<span class="token punctuation">)</span><span class="token punctuation">,</span> axis <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+         <span class="token comment"># *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****</span>
+     <span class="token keyword">return</span> dists<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+</li>
+<li><p>不使用循环</p>
+<p>用A表示第i个测试矩阵$(N\times L)$，B表示第j个训练矩阵$(M \times L)$。根据距离公式：<br>$$<br>\begin{aligned}<br>d_2(i, j) &#x3D;&amp; \sqrt{\sum_k (A_{ik} - B_{jk})^2}\<br>      &#x3D;&amp; \sqrt{\sum_k (A_{ik}^2 + B_{jk}^2 - 2 A_{ik}\cdot B_{jk})}\<br>      &#x3D;&amp; \sqrt{\sum_k A_{ik}^2 + \sum_k B_{jk}^2 - 2(A\cdot B’)_{ij}}<br>\end{aligned}<br>$$<br>$dist[i][j]$表示测试矩阵第i行每个数依次减去训练矩阵第j行每个数后，再平方求和。</p>
+<p>我们将平方差展开，$dist[i][j]$则可以表示矩阵A第i行每个数平方的和，加上矩阵B第j行每个数平方的和，减去矩阵A与矩阵B转置矩乘后第i行j列的值。</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">compute_distances_no_loops</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> X<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    Compute the distance between each test point in X and each training point
+    in self.X_train using no explicit loops.
+  
+    Input / Output: Same as compute_distances_two_loops
+    """</span>
+    num_test <span class="token operator">=</span> X<span class="token punctuation">.</span>shape<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+    num_train <span class="token operator">=</span> self<span class="token punctuation">.</span>X_train<span class="token punctuation">.</span>shape<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+    dists <span class="token operator">=</span> np<span class="token punctuation">.</span>zeros<span class="token punctuation">(</span><span class="token punctuation">(</span>num_test<span class="token punctuation">,</span> num_train<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token comment"># *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****</span>
+    ab <span class="token operator">=</span> np<span class="token punctuation">.</span>dot<span class="token punctuation">(</span>X<span class="token punctuation">,</span> self<span class="token punctuation">.</span>X_train<span class="token punctuation">.</span>T<span class="token punctuation">)</span>
+    a2 <span class="token operator">=</span> np<span class="token punctuation">.</span><span class="token builtin">sum</span><span class="token punctuation">(</span>np<span class="token punctuation">.</span>square<span class="token punctuation">(</span>X<span class="token punctuation">)</span><span class="token punctuation">,</span> axis<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
+    b2 <span class="token operator">=</span> np<span class="token punctuation">.</span><span class="token builtin">sum</span><span class="token punctuation">(</span>np<span class="token punctuation">.</span>square<span class="token punctuation">(</span>self<span class="token punctuation">.</span>X_train<span class="token punctuation">)</span><span class="token punctuation">,</span> axis <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span>reshape<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span>
+    dists <span class="token operator">=</span> np<span class="token punctuation">.</span>sqrt<span class="token punctuation">(</span>a2 <span class="token operator">+</span> b2 <span class="token operator">-</span> <span class="token number">2</span> <span class="token operator">*</span> ab<span class="token punctuation">)</span>
+    <span class="token comment"># *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****</span>
+    <span class="token keyword">return</span> dists<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>比较三种写法的计算时间</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token comment"># Let's compare how fast the implementations are</span>
+<span class="token keyword">def</span> <span class="token function">time_function</span><span class="token punctuation">(</span>f<span class="token punctuation">,</span> <span class="token operator">*</span>args<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    Call a function f with args and return the time (in seconds) that it took to execute.
+    """</span>
+    <span class="token keyword">import</span> time
+    tic <span class="token operator">=</span> time<span class="token punctuation">.</span>time<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    f<span class="token punctuation">(</span><span class="token operator">*</span>args<span class="token punctuation">)</span>
+    toc <span class="token operator">=</span> time<span class="token punctuation">.</span>time<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> toc <span class="token operator">-</span> tic
+
+two_loop_time <span class="token operator">=</span> time_function<span class="token punctuation">(</span>classifier<span class="token punctuation">.</span>compute_distances_two_loops<span class="token punctuation">,</span> X_test<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Two loop version took %f seconds'</span> <span class="token operator">%</span> two_loop_time<span class="token punctuation">)</span>
+
+one_loop_time <span class="token operator">=</span> time_function<span class="token punctuation">(</span>classifier<span class="token punctuation">.</span>compute_distances_one_loop<span class="token punctuation">,</span> X_test<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'One loop version took %f seconds'</span> <span class="token operator">%</span> one_loop_time<span class="token punctuation">)</span>
+
+no_loop_time <span class="token operator">=</span> time_function<span class="token punctuation">(</span>classifier<span class="token punctuation">.</span>compute_distances_no_loops<span class="token punctuation">,</span> X_test<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'No loop version took %f seconds'</span> <span class="token operator">%</span> no_loop_time<span class="token punctuation">)</span>
+
+<span class="token comment"># You should see significantly faster performance with the fully vectorized implementation!</span>
+
+<span class="token comment"># NOTE: depending on what machine you're using, </span>
+<span class="token comment"># you might not see a speedup when you go from two loops to one loop, </span>
+<span class="token comment"># and might even see a slow-down.</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>Two loop version took 41.231337 seconds</p>
+<p>One loop version took 44.618606 seconds</p>
+<p>No loop version took 0.619477 seconds</p>
+</blockquote>
+</li>
+</ul>
+<p>可以发现不用循环计算速度较前两种快了很多，分析复杂度：</p>
+<p>假设测试数据为N，训练数据M，维度为L&#x3D;3072。</p>
+<p>暴力枚举：$O(NML^2)$。</p>
+<p>使用矩阵乘法加速后：$O(NML)$。</p>
+<h4 id="可视化距离矩阵"><a href="#可视化距离矩阵" class="headerlink" title="可视化距离矩阵"></a>可视化距离矩阵</h4><pre class="line-numbers language-python" data-language="python"><code class="language-python">plt<span class="token punctuation">.</span>imshow<span class="token punctuation">(</span>dists<span class="token punctuation">,</span> interpolation<span class="token operator">=</span><span class="token string">'none'</span><span class="token punctuation">)</span>
+plt<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p><img src="/2022/10/16/cs231n-1/distance.png"></p>
+</blockquote>
+<p><u><strong>Inline Question 1</strong></u> </p>
+<p>Notice the structured patterns in the distance matrix, where some rows or columns are visibly brighter. (Note that with the default color scheme black indicates low distances while white indicates high distances.)</p>
+<ul>
+<li>What in the data is the cause behind the distinctly bright rows?</li>
+<li>What causes the columns?</li>
+</ul>
+<p>$\color{blue}{\textit Your Answer:}$</p>
+<ol>
+<li>导致某些行很亮的原因：若第$i$行很亮，则说明第$i$个测试数据与多数训练数据差异都很大，可能大部分训练数据都没有出现第$i$个测试数据对应的类别。</li>
+<li>导致某些列很亮的原因：若第$j$列很亮，则说明第$j$个训练数据与多数测试数据差异很大，可能该训练数据对应的类别很少在测试数据集中出现。</li>
+</ol>
+<h4 id="标签预测"><a href="#标签预测" class="headerlink" title="标签预测"></a>标签预测</h4><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">predict_labels</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> dists<span class="token punctuation">,</span> k<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""
+        Given a matrix of distances between test points and training points,
+        predict a label for each test point.
+
+        Inputs:
+        - dists: A numpy array of shape (num_test, num_train) where dists[i, j]
+          gives the distance betwen the ith test point and the jth training point.
+
+        Returns:
+        - y: A numpy array of shape (num_test,) containing predicted labels for the
+          test data, where y[i] is the predicted label for the test point X[i].
+        """</span>
+        num_test <span class="token operator">=</span> dists<span class="token punctuation">.</span>shape<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+        y_pred <span class="token operator">=</span> np<span class="token punctuation">.</span>zeros<span class="token punctuation">(</span>num_test<span class="token punctuation">)</span>
+        <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>num_test<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token comment"># A list of length k storing the labels of the k nearest neighbors to</span>
+            <span class="token comment"># the ith test point.</span>
+            closest_y <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+            <span class="token comment"># *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****</span>
+            k_idxs <span class="token operator">=</span> np<span class="token punctuation">.</span>argsort<span class="token punctuation">(</span>dists<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">:</span> k<span class="token punctuation">]</span>
+            closest_y <span class="token operator">=</span> self<span class="token punctuation">.</span>y_train<span class="token punctuation">[</span>k_idxs<span class="token punctuation">]</span>
+
+            <span class="token comment"># *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****</span>
+            <span class="token comment"># *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****</span>
+            counts <span class="token operator">=</span> np<span class="token punctuation">.</span>bincount<span class="token punctuation">(</span>closest_y<span class="token punctuation">)</span>
+            y_pred<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> np<span class="token punctuation">.</span>argmax<span class="token punctuation">(</span>counts<span class="token punctuation">)</span>
+
+            <span class="token comment"># *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****</span>
+
+        <span class="token keyword">return</span> y_pred<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="正确率计算"><a href="#正确率计算" class="headerlink" title="正确率计算"></a>正确率计算</h4><p>测试k&#x3D;1时的结果：</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token comment"># Now implement the function predict_labels and run the code below:</span>
+<span class="token comment"># We use k = 1 (which is Nearest Neighbor).</span>
+y_test_pred <span class="token operator">=</span> classifier<span class="token punctuation">.</span>predict_labels<span class="token punctuation">(</span>dists<span class="token punctuation">,</span> k<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span>
+
+<span class="token comment"># Compute and print the fraction of correctly predicted examples</span>
+num_correct <span class="token operator">=</span> np<span class="token punctuation">.</span><span class="token builtin">sum</span><span class="token punctuation">(</span>y_test_pred <span class="token operator">==</span> y_test<span class="token punctuation">)</span>
+accuracy <span class="token operator">=</span> <span class="token builtin">float</span><span class="token punctuation">(</span>num_correct<span class="token punctuation">)</span> <span class="token operator">/</span> num_test
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Got %d / %d correct => accuracy: %f'</span> <span class="token operator">%</span> <span class="token punctuation">(</span>num_correct<span class="token punctuation">,</span> num_test<span class="token punctuation">,</span> accuracy<span class="token punctuation">)</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>Got 137 &#x2F; 500 correct &#x3D;&gt; accuracy: 0.274000</p>
+</blockquote>
+<p>测试k&#x3D;5时的结果：</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python">y_test_pred <span class="token operator">=</span> classifier<span class="token punctuation">.</span>predict_labels<span class="token punctuation">(</span>dists<span class="token punctuation">,</span> k<span class="token operator">=</span><span class="token number">5</span><span class="token punctuation">)</span>
+num_correct <span class="token operator">=</span> np<span class="token punctuation">.</span><span class="token builtin">sum</span><span class="token punctuation">(</span>y_test_pred <span class="token operator">==</span> y_test<span class="token punctuation">)</span>
+accuracy <span class="token operator">=</span> <span class="token builtin">float</span><span class="token punctuation">(</span>num_correct<span class="token punctuation">)</span> <span class="token operator">/</span> num_test
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Got %d / %d correct => accuracy: %f'</span> <span class="token operator">%</span> <span class="token punctuation">(</span>num_correct<span class="token punctuation">,</span> num_test<span class="token punctuation">,</span> accuracy<span class="token punctuation">)</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>Got 139 &#x2F; 500 correct &#x3D;&gt; accuracy: 0.278000</p>
+</blockquote>
+<p><u><strong>Inline Question 2</strong></u></p>
+<p>We can also use other distance metrics such as L1 distance.<br>For pixel values $p_{ij}^{(k)}$ at location $(i,j)$ of some image $I_k$, </p>
+<p>the mean $\mu$ across all pixels over all images is $$\mu&#x3D;\frac{1}{nhw}\sum_{k&#x3D;1}^n\sum_{i&#x3D;1}^{h}\sum_{j&#x3D;1}^{w}p_{ij}^{(k)}$$<br>And the pixel-wise mean $\mu_{ij}$ across all images is<br>$$\mu_{ij}&#x3D;\frac{1}{n}\sum_{k&#x3D;1}^np_{ij}^{(k)}.$$<br>The general standard deviation $\sigma$ and pixel-wise standard deviation $\sigma_{ij}$ is defined similarly.</p>
+<p>Which of the following preprocessing steps will not change the performance of a Nearest Neighbor classifier that uses L1 distance? Select all that apply.</p>
+<ol>
+<li>Subtracting the mean $\mu$ ($\tilde{p}<em>{ij}^{(k)}&#x3D;p</em>{ij}^{(k)}-\mu$.)</li>
+<li>Subtracting the per pixel mean $\mu_{ij}$  ($\tilde{p}<em>{ij}^{(k)}&#x3D;p</em>{ij}^{(k)}-\mu_{ij}$.)</li>
+<li>Subtracting the mean $\mu$ and dividing by the standard deviation $\sigma$.</li>
+<li>Subtracting the pixel-wise mean $\mu_{ij}$ and dividing by the pixel-wise standard deviation $\sigma_{ij}$.</li>
+<li>Rotating the coordinate axes of the data.</li>
+</ol>
+<p>$\color{blue}{\textit Your Answer:}$1, 2, 3</p>
+<p>$\color{blue}{\textit Your Explanation:}$</p>
+<ol>
+<li>每个像素值减一个相同的数，计算L1作差时会被消除，L1的值不会改变</li>
+<li>对应位置相同的像素点减去一个相同的数，计算L1是对应位置相减，L1的值不会改变</li>
+<li>每个像素值除以一个相同的值，相当于原L1的值除以$\sigma$，虽然L1的值发生了改变，但是不会影响分类器的效果。</li>
+<li>不同位置的像素值除以一个不同的值，相当于不同位置有一个不同的权值，导致部分位置的影响增大或减小，会改变L1的值，可能会影响分类器的效果。但是题目中提到$\sigma_{ij}$与$\sigma$可视为相似，在这个条件大概率不会影响。</li>
+<li>L1的值跟坐标系选取有关，旋转坐标系后会影响效果。</li>
+</ol>
+<h4 id="交叉验证"><a href="#交叉验证" class="headerlink" title="交叉验证"></a>交叉验证</h4><pre class="line-numbers language-python" data-language="python"><code class="language-python">num_folds <span class="token operator">=</span> <span class="token number">5</span>
+k_choices <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">12</span><span class="token punctuation">,</span> <span class="token number">15</span><span class="token punctuation">,</span> <span class="token number">20</span><span class="token punctuation">,</span> <span class="token number">50</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">]</span>
+
+X_train_folds <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+y_train_folds <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+<span class="token comment"># *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****</span>
+X_train_folds <span class="token operator">=</span> np<span class="token punctuation">.</span>array_split<span class="token punctuation">(</span>X_train<span class="token punctuation">,</span> num_folds<span class="token punctuation">,</span> axis<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">)</span>
+y_train_folds <span class="token operator">=</span> np<span class="token punctuation">.</span>array_split<span class="token punctuation">(</span>y_train<span class="token punctuation">,</span> num_folds<span class="token punctuation">,</span> axis<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">)</span>
+<span class="token comment"># *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****</span>
+<span class="token comment"># A dictionary holding the accuracies for different values of k that we find</span>
+<span class="token comment"># when running cross-validation. After running cross-validation,</span>
+<span class="token comment"># k_to_accuracies[k] should be a list of length num_folds giving the different</span>
+<span class="token comment"># accuracy values that we found when using that value of k.</span>
+k_to_accuracies <span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span>
+<span class="token comment"># *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****</span>
+<span class="token keyword">for</span> k <span class="token keyword">in</span> k_choices<span class="token punctuation">:</span>
+  accuracies <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+  <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>num_folds<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    X_train_cross <span class="token operator">=</span> np<span class="token punctuation">.</span>vstack<span class="token punctuation">(</span>X_train_folds<span class="token punctuation">[</span><span class="token punctuation">:</span> i<span class="token punctuation">]</span> <span class="token operator">+</span> X_train_folds<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span> <span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+    y_train_cross <span class="token operator">=</span> np<span class="token punctuation">.</span>hstack<span class="token punctuation">(</span>y_train_folds<span class="token punctuation">[</span><span class="token punctuation">:</span> i<span class="token punctuation">]</span> <span class="token operator">+</span> y_train_folds<span class="token punctuation">[</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+    classifier<span class="token punctuation">.</span>train<span class="token punctuation">(</span>X_train_cross<span class="token punctuation">,</span> y_train_cross<span class="token punctuation">)</span>
+
+    X_test_cross <span class="token operator">=</span> X_train_folds<span class="token punctuation">[</span>i<span class="token punctuation">]</span>
+    y_test_cross <span class="token operator">=</span> y_train_folds<span class="token punctuation">[</span>i<span class="token punctuation">]</span>
+    y_test_pred <span class="token operator">=</span> classifier<span class="token punctuation">.</span>predict<span class="token punctuation">(</span>X_test_cross<span class="token punctuation">,</span> k<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+
+    num_correct <span class="token operator">=</span> np<span class="token punctuation">.</span><span class="token builtin">sum</span><span class="token punctuation">(</span>y_test_pred <span class="token operator">==</span> y_test_cross<span class="token punctuation">)</span>
+    accuracies<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token builtin">float</span><span class="token punctuation">(</span>num_correct<span class="token punctuation">)</span> <span class="token operator">/</span> X_test_cross<span class="token punctuation">.</span>shape<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+  k_to_accuracies<span class="token punctuation">[</span>k<span class="token punctuation">]</span> <span class="token operator">=</span> accuracies
+<span class="token comment"># *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****</span>
+
+<span class="token comment"># Print out the computed accuracies</span>
+<span class="token keyword">for</span> k <span class="token keyword">in</span> <span class="token builtin">sorted</span><span class="token punctuation">(</span>k_to_accuracies<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> accuracy <span class="token keyword">in</span> k_to_accuracies<span class="token punctuation">[</span>k<span class="token punctuation">]</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'k = %d, accuracy = %f'</span> <span class="token operator">%</span> <span class="token punctuation">(</span>k<span class="token punctuation">,</span> accuracy<span class="token punctuation">)</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>k &#x3D; 1, accuracy &#x3D; 0.263000</p>
+<p>k &#x3D; 1, accuracy &#x3D; 0.257000 </p>
+<p>k &#x3D; 1, accuracy &#x3D; 0.264000</p>
+<p>…</p>
+<p>k &#x3D; 100, accuracy &#x3D; 0.270000</p>
+<p>k &#x3D; 100, accuracy &#x3D; 0.263000</p>
+<p>k &#x3D; 100, accuracy &#x3D; 0.256000</p>
+<p>k &#x3D; 100, accuracy &#x3D; 0.263000</p>
+</blockquote>
+<h4 id="可视化选取k值"><a href="#可视化选取k值" class="headerlink" title="可视化选取k值"></a>可视化选取k值</h4><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token comment"># plot the raw observations</span>
+<span class="token keyword">for</span> k <span class="token keyword">in</span> k_choices<span class="token punctuation">:</span>
+    accuracies <span class="token operator">=</span> k_to_accuracies<span class="token punctuation">[</span>k<span class="token punctuation">]</span>
+    plt<span class="token punctuation">.</span>scatter<span class="token punctuation">(</span><span class="token punctuation">[</span>k<span class="token punctuation">]</span> <span class="token operator">*</span> <span class="token builtin">len</span><span class="token punctuation">(</span>accuracies<span class="token punctuation">)</span><span class="token punctuation">,</span> accuracies<span class="token punctuation">)</span>
+
+<span class="token comment"># plot the trend line with error bars that correspond to standard deviation</span>
+accuracies_mean <span class="token operator">=</span> np<span class="token punctuation">.</span>array<span class="token punctuation">(</span><span class="token punctuation">[</span>np<span class="token punctuation">.</span>mean<span class="token punctuation">(</span>v<span class="token punctuation">)</span> <span class="token keyword">for</span> k<span class="token punctuation">,</span>v <span class="token keyword">in</span> <span class="token builtin">sorted</span><span class="token punctuation">(</span>k_to_accuracies<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+accuracies_std <span class="token operator">=</span> np<span class="token punctuation">.</span>array<span class="token punctuation">(</span><span class="token punctuation">[</span>np<span class="token punctuation">.</span>std<span class="token punctuation">(</span>v<span class="token punctuation">)</span> <span class="token keyword">for</span> k<span class="token punctuation">,</span>v <span class="token keyword">in</span> <span class="token builtin">sorted</span><span class="token punctuation">(</span>k_to_accuracies<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+plt<span class="token punctuation">.</span>errorbar<span class="token punctuation">(</span>k_choices<span class="token punctuation">,</span> accuracies_mean<span class="token punctuation">,</span> yerr<span class="token operator">=</span>accuracies_std<span class="token punctuation">)</span>
+plt<span class="token punctuation">.</span>title<span class="token punctuation">(</span><span class="token string">'Cross-validation on k'</span><span class="token punctuation">)</span>
+plt<span class="token punctuation">.</span>xlabel<span class="token punctuation">(</span><span class="token string">'k'</span><span class="token punctuation">)</span>
+plt<span class="token punctuation">.</span>ylabel<span class="token punctuation">(</span><span class="token string">'Cross-validation accuracy'</span><span class="token punctuation">)</span>
+plt<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p><img src="/2022/10/16/cs231n-1/cross-k.png"></p>
+</blockquote>
+<p>根据图像观察，当k值为10左右，效果较好：</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token comment"># Based on the cross-validation results above, choose the best value for k,   </span>
+<span class="token comment"># retrain the classifier using all the training data, and test it on the test</span>
+<span class="token comment"># data. You should be able to get above 28% accuracy on the test data.</span>
+best_k <span class="token operator">=</span> <span class="token number">10</span>
+
+classifier <span class="token operator">=</span> KNearestNeighbor<span class="token punctuation">(</span><span class="token punctuation">)</span>
+classifier<span class="token punctuation">.</span>train<span class="token punctuation">(</span>X_train<span class="token punctuation">,</span> y_train<span class="token punctuation">)</span>
+y_test_pred <span class="token operator">=</span> classifier<span class="token punctuation">.</span>predict<span class="token punctuation">(</span>X_test<span class="token punctuation">,</span> k<span class="token operator">=</span>best_k<span class="token punctuation">)</span>
+
+<span class="token comment"># Compute and display the accuracy</span>
+num_correct <span class="token operator">=</span> np<span class="token punctuation">.</span><span class="token builtin">sum</span><span class="token punctuation">(</span>y_test_pred <span class="token operator">==</span> y_test<span class="token punctuation">)</span>
+accuracy <span class="token operator">=</span> <span class="token builtin">float</span><span class="token punctuation">(</span>num_correct<span class="token punctuation">)</span> <span class="token operator">/</span> num_test
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">'Got %d / %d correct => accuracy: %f'</span> <span class="token operator">%</span> <span class="token punctuation">(</span>num_correct<span class="token punctuation">,</span> num_test<span class="token punctuation">,</span> accuracy<span class="token punctuation">)</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>Got 141 &#x2F; 500 correct &#x3D;&gt; accuracy: 0.282000</p>
+</blockquote>
+<p><strong>Inline Question 3</strong></p>
+<p>Which of the following statements about $k$-Nearest Neighbor ($k$-NN) are true in a classification setting, and for all $k$? Select all that apply.</p>
+<ol>
+<li>The decision boundary of the k-NN classifier is linear.</li>
+<li>The training error of a 1-NN will always be lower than or equal to that of 5-NN.</li>
+<li>The test error of a 1-NN will always be lower than that of a 5-NN.</li>
+<li>The time needed to classify a test example with the k-NN classifier grows with the size of the training set.</li>
+<li>None of the above.</li>
+</ol>
+<p>$\color{blue}{\textit Your Answer:}$ 2, 4 </p>
+<p>$\color{blue}{\textit Your Explanation:}$</p>
+<ol>
+<li>knn根据周围最近邻的k个点投票决定，这个思想无法保证决策边界一定是线性的。</li>
+<li>1-NN表示只有最近邻点作为依据，是没有训练误差的。</li>
+<li>k越小，测试误差越大。</li>
+<li>每次test都要与训练数据矩阵做矩乘，训练集越大，花费时间越长。</li>
+</ol>
+<h3 id="KNN总结"><a href="#KNN总结" class="headerlink" title="KNN总结"></a>KNN总结</h3><h4 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h4><ol>
+<li>算法容易理解，思路简单</li>
+<li>分类器训练时间短</li>
+<li>适用于各种分类问题</li>
+</ol>
+<h4 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h4><ol>
+<li><p>代码实现的KNN分类器最优的结果也只有28.2%的正确率，正确率太低</p>
+</li>
+<li><p>训练$O(1)$，测试$O(n)$。预测时间与训练集大小正相关，预测不方便</p>
+</li>
+<li><p>暴力采用像素点距离差异作为判别依据十分不准确，容易分辨错误。例如下图，后三张不同的图片到第一张图的L2相同。</p>
+<p><img src="/2022/10/16/cs231n-1/face.png"></p>
+</li>
+</ol>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        文章作者:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">Knowledge</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        文章链接:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="http://knowledge-llz.github.io/2022/10/16/cs231n-1/">http://knowledge-llz.github.io/2022/10/16/cs231n-1/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        版权声明:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    本博客所有文章除特別声明外，均采用
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    许可协议。转载请注明来源
+                    <a href="/about" target="_blank">Knowledge</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>复制成功，请遵循本文的转载规则</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">查看</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">
+                                    <span class="chip bg-color">机器学习</span>
+                                </a>
+                            
+                                <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/">
+                                    <span class="chip bg-color">计算机视觉</span>
+                                </a>
+                            
+                                <a href="/tags/KNN/">
+                                    <span class="chip bg-color">KNN</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+            <div class="card">
+                <a href="/2022/10/24/cs231n-2/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/7.jpg" class="responsive-img" alt="Stanford-cs231N笔记（二）：线性分类器">
+                        
+                        <span class="card-title">Stanford-cs231N笔记（二）：线性分类器</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2022-10-24
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/" class="post-category">
+                                    人工智能
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">
+                        <span class="chip bg-color">机器学习</span>
+                    </a>
+                    
+                    <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89/">
+                        <span class="chip bg-color">计算机视觉</span>
+                    </a>
+                    
+                    <a href="/tags/%E7%BA%BF%E6%80%A7%E5%88%86%E7%B1%BB%E5%99%A8/">
+                        <span class="chip bg-color">线性分类器</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/2022/10/10/ex10-06/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/9.jpg" class="responsive-img" alt="Petrozavodsk Winter Training Camp 2016F题Data Structure You’ve Never Heard Of">
+                        
+                        <span class="card-title">Petrozavodsk Winter Training Camp 2016F题Data Structure You’ve Never Heard Of</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-10-10
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" class="post-category">
+                                    数据结构
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/%E5%88%86%E5%9D%97/">
+                        <span class="chip bg-color">分块</span>
+                    </a>
+                    
+                    <a href="/tags/%E6%8A%98%E5%8D%8A/">
+                        <span class="chip bg-color">折半</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;目录</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4'
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+
+
+<script src="https://cdn.bootcss.com/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script>
+    MathJax.Hub.Config({
+        tex2jax: {inlineMath: [['$', '$'], ['\\(', '\\)']]}
+    });
+</script>
+
+
+
+    <footer class="page-footer bg-color">
+    
+
+    <div class="container row center-align"
+         style="margin-bottom: 15px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2022</span>
+            
+            <a href="/about" target="_blank">Knowledge</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+                &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
+                        class="white-color">51.8k</span>
+            
+            
+            
+                
+            
+            
+                <span id="busuanzi_container_site_pv">
+                &nbsp;|&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;
+                    <span id="busuanzi_value_site_pv" class="white-color"></span>
+            </span>
+            
+            
+                <span id="busuanzi_container_site_uv">
+                &nbsp;|&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;
+                    <span id="busuanzi_value_site_uv" class="white-color"></span>
+            </span>
+            
+            <br>
+
+            <!-- 运行天数提醒. -->
+            
+                <span id="sitetime"> Loading ...</span>
+                <script>
+                    var calcSiteTime = function () {
+                        var seconds = 1000;
+                        var minutes = seconds * 60;
+                        var hours = minutes * 60;
+                        var days = hours * 24;
+                        var years = days * 365;
+                        var today = new Date();
+                        var startYear = "2022";
+                        var startMonth = "3";
+                        var startDate = "28";
+                        var startHour = "0";
+                        var startMinute = "0";
+                        var startSecond = "0";
+                        var todayYear = today.getFullYear();
+                        var todayMonth = today.getMonth() + 1;
+                        var todayDate = today.getDate();
+                        var todayHour = today.getHours();
+                        var todayMinute = today.getMinutes();
+                        var todaySecond = today.getSeconds();
+                        var t1 = Date.UTC(startYear, startMonth, startDate, startHour, startMinute, startSecond);
+                        var t2 = Date.UTC(todayYear, todayMonth, todayDate, todayHour, todayMinute, todaySecond);
+                        var diff = t2 - t1;
+                        var diffYears = Math.floor(diff / years);
+                        var diffDays = Math.floor((diff / days) - diffYears * 365);
+
+                        // 区分是否有年份.
+                        var language = 'zh-CN';
+                        if (startYear === String(todayYear)) {
+                            document.getElementById("year").innerHTML = todayYear;
+                            var daysTip = 'This site has been running for ' + diffDays + ' days';
+                            if (language === 'zh-CN') {
+                                daysTip = '本站已运行 ' + diffDays + ' 天';
+                            } else if (language === 'zh-HK') {
+                                daysTip = '本站已運行 ' + diffDays + ' 天';
+                            }
+                            document.getElementById("sitetime").innerHTML = daysTip;
+                        } else {
+                            document.getElementById("year").innerHTML = startYear + " - " + todayYear;
+                            var yearsAndDaysTip = 'This site has been running for ' + diffYears + ' years and '
+                                + diffDays + ' days';
+                            if (language === 'zh-CN') {
+                                yearsAndDaysTip = '本站已运行 ' + diffYears + ' 年 ' + diffDays + ' 天';
+                            } else if (language === 'zh-HK') {
+                                yearsAndDaysTip = '本站已運行 ' + diffYears + ' 年 ' + diffDays + ' 天';
+                            }
+                            document.getElementById("sitetime").innerHTML = yearsAndDaysTip;
+                        }
+                    }
+
+                    calcSiteTime();
+                </script>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/knowledge-llz" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+    <a href="mailto:925538513@qq.com" class="tooltipped" target="_blank" data-tooltip="邮件联系我" data-position="top" data-delay="50">
+        <i class="fas fa-envelope-open"></i>
+    </a>
+
+
+
+
+
+
+
+    <a href="tencent://AddContact/?fromId=50&fromSubId=1&subcmd=all&uin=925538513" class="tooltipped" target="_blank" data-tooltip="QQ联系我: 925538513" data-position="top" data-delay="50">
+        <i class="fab fa-qq"></i>
+    </a>
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;搜索</span>
+            <input type="search" id="searchInput" name="s" placeholder="请输入搜索的关键字"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    
+
+    
+
+    <!-- 雪花特效 -->
+    
+
+    <!-- 鼠标星星特效 -->
+    
+
+     
+        <script src="https://ssl.captcha.qq.com/TCaptcha.js"></script>
+        <script src="/libs/others/TencentCaptcha.js"></script>
+        <button id="TencentCaptcha" data-appid="xxxxxxxxxx" data-cbfn="callback" type="button" hidden></button>
+    
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+    <!--腾讯兔小巢-->
+    
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>
