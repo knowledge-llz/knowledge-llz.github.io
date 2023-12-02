@@ -500,6 +500,7 @@
             <div id="articleContent">
                 <h1 id="大语言模型使用与测试记录"><a href="#大语言模型使用与测试记录" class="headerlink" title="大语言模型使用与测试记录"></a>大语言模型使用与测试记录</h1><h2 id="Dolly2-0"><a href="#Dolly2-0" class="headerlink" title="Dolly2.0"></a><a target="_blank" rel="noopener" href="https://huggingface.co/databricks/dolly-v2-12b">Dolly2.0</a></h2><h3 id="环境安装"><a href="#环境安装" class="headerlink" title="环境安装"></a>环境安装</h3><pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token operator">%</span>pip install <span class="token string">"accelerate>=0.16.0,&lt;1"</span> <span class="token string">"transformers[torch]>=4.28.1,&lt;5"</span> <span class="token string">"torch>=1.13.1,&lt;2"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
+<p>环境路径  <code>/home/luolvzhou/.conda/py3.8</code></p>
 <h3 id="安装代码"><a href="#安装代码" class="headerlink" title="安装代码"></a>安装代码</h3><p><code>cache_dir</code>参数指定下载目录，文件大小在23G左右。</p>
 <pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">from</span> instruct_pipeline <span class="token keyword">import</span> InstructionTextGenerationPipeline
 <span class="token keyword">from</span> transformers <span class="token keyword">import</span> AutoModelForCausalLM<span class="token punctuation">,</span> AutoTokenizer
@@ -591,6 +592,7 @@ gradio
 mdtex2html
 sentencepiece
 accelerate<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>环境路径  <code>/home/luolvzhou/.conda/chatglm</code></p>
 <h3 id="安装代码-1"><a href="#安装代码-1" class="headerlink" title="安装代码"></a>安装代码</h3><p>文件大小在37G左右，注意选择空间足够的目录。依次执行：</p>
 <p><code>git clone https://huggingface.co/THUDM/chatglm-6b</code></p>
 <p><code>git lfs install</code></p>
@@ -700,7 +702,10 @@ cd MOSS<span aria-hidden="true" class="line-numbers-rows"><span></span><span></s
 <li>创建conda环境<pre class="line-numbers language-none"><code class="language-none">conda create --name moss python&#x3D;3.8
 conda activate moss<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></li>
 <li>安装依赖<pre class="line-numbers language-none"><code class="language-none">pip install -r requirements.txt<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-<h3 id="多卡部署"><a href="#多卡部署" class="headerlink" title="多卡部署"></a>多卡部署</h3>在步骤1中git的moss仓库下新建python文件，执行以下代码。注意设定<code>cache_dir</code>参数指定模型参数安装的路径，设置<code>resume_download=True</code>开启断线重连。由于模型下载较慢且容易中断，代码中采用<code>while</code>，<code>try</code>保证下载一旦中断后程序继续进行下载。模型大小在27G左右。<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> os 
+环境路径  <code>/home/luolvzhou/.conda/moss</code></li>
+</ol>
+<h3 id="多卡部署"><a href="#多卡部署" class="headerlink" title="多卡部署"></a>多卡部署</h3><p>在步骤1中git的moss仓库下新建python文件，执行以下代码。注意设定<code>cache_dir</code>参数指定模型参数安装的路径，设置<code>resume_download=True</code>开启断线重连。由于模型下载较慢且容易中断，代码中采用<code>while</code>，<code>try</code>保证下载一旦中断后程序继续进行下载。模型大小在27G左右。</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> os 
 <span class="token keyword">import</span> torch
 <span class="token keyword">from</span> huggingface_hub <span class="token keyword">import</span> snapshot_download
 <span class="token keyword">from</span> transformers <span class="token keyword">import</span> AutoConfig<span class="token punctuation">,</span> AutoTokenizer<span class="token punctuation">,</span> AutoModelForCausalLM
@@ -719,8 +724,8 @@ download <span class="token operator">=</span> <span class="token boolean">False
         model<span class="token punctuation">.</span>tie_weights<span class="token punctuation">(</span><span class="token punctuation">)</span>
         download <span class="token operator">=</span> <span class="token boolean">True</span>
     <span class="token keyword">except</span><span class="token punctuation">:</span>
-        download <span class="token operator">=</span> <span class="token boolean">False</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
-</ol>
+        download <span class="token operator">=</span> <span class="token boolean">False</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
 <h3 id="代码调用-2"><a href="#代码调用-2" class="headerlink" title="代码调用"></a>代码调用</h3><p>使用以下代码可以加载模型</p>
 <pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token comment">#coding:utf-8</span>
 <span class="token keyword">import</span> os 
@@ -936,18 +941,17 @@ query <span class="token operator">+=</span> response <span class="token operato
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="far fa-dot-circle"></i>&nbsp;本篇
-            </div>
+                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
             <div class="card">
-                <a href="/2023/05/11/llm-guidance/">
+                <a href="/2023/11/29/logistic-regression/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/1.jpg" class="responsive-img" alt="大语言模型使用与测试记录">
+                        <img src="/medias/featureimages/6.jpg" class="responsive-img" alt="逻辑回归">
                         
-                        <span class="card-title">大语言模型使用与测试记录</span>
+                        <span class="card-title">逻辑回归</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -957,23 +961,34 @@ query <span class="token operator">+=</span> response <span class="token operato
                         
                     </div>
                     <div class="publish-info">
-                            <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2023-05-11
-                            </span>
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2023-11-29
+                        </span>
                         <span class="publish-author">
                             
-                            <i class="fas fa-user fa-fw"></i>
-                            Knowledge
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/" class="post-category">
+                                    人工智能
+                                </a>
+                            
                             
                         </span>
                     </div>
                 </div>
-
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/LLM/">
-                        <span class="chip bg-color">LLM</span>
+                    <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">
+                        <span class="chip bg-color">机器学习</span>
+                    </a>
+                    
+                    <a href="/tags/%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB/">
+                        <span class="chip bg-color">模式识别</span>
+                    </a>
+                    
+                    <a href="/tags/%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92/">
+                        <span class="chip bg-color">逻辑回归</span>
                     </a>
                     
                 </div>
@@ -991,9 +1006,9 @@ query <span class="token operator">+=</span> response <span class="token operato
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/21.jpg" class="responsive-img" alt="2022年ICP西安站简易题解">
+                        <img src="/medias/featureimages/24.jpg" class="responsive-img" alt="2022年ICPC西安站简易题解">
                         
-                        <span class="card-title">2022年ICP西安站简易题解</span>
+                        <span class="card-title">2022年ICPC西安站简易题解</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -1166,7 +1181,7 @@ query <span class="token operator">+=</span> response <span class="token operato
             <br>
             
                 &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                        class="white-color">64.6k</span>
+                        class="white-color">67.2k</span>
             
             
             
