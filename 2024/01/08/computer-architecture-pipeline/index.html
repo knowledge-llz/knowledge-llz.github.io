@@ -480,7 +480,7 @@ ID指令译码&amp;#x2F;寄存器提">
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-check fa-fw"></i>更新日期:&nbsp;&nbsp;
-                    2024-01-10
+                    2024-01-13
                 </div>
                 
 
@@ -539,14 +539,15 @@ ID指令译码&amp;#x2F;寄存器提">
 <h3 id="结构冒险"><a href="#结构冒险" class="headerlink" title="结构冒险"></a>结构冒险</h3><p>结构冒险一般没什么好的办法，因为是硬件资源的冲突，所以只能通过增加硬件来解决，三个字概况是“得加钱”。在不加钱的情况下， 发生结构冒险时采取引入bubble的方法，即流水线停顿一个周期。bubble这个词非常形象，就像水瓶里的气泡一样占据了水瓶空间但是却没有水，在这里bubble可以理解为，占据了流水线的空间但这个周期不 q工作。</p>
 <h3 id="数据冒险"><a href="#数据冒险" class="headerlink" title="数据冒险"></a>数据冒险</h3><p>数据冒险可以分为三种情况：</p>
 <ul>
-<li><p>Flow dependence 真数据相关（RAW: Read after Write)<br>$$<br>r_3\leftarrow r_1\ op\ r_2\<br>r_5\leftarrow r_3\ op\ r_4<br>$$</p>
+<li><p>Flow dependence 真数据相关（RAW: Read after Write)<br>$$<br>r_3\leftarrow r_1\ op\ r_2\\<br>r_5\leftarrow r_3\ op\ r_4<br>$$</p>
 </li>
-<li><p>Anti dependence 反相关（WAR: Write after Read)<br>$$<br>r_3\leftarrow r_1\ op\ r_2\<br>r_1\leftarrow r_4\ op\ r_5<br>$$</p>
+<li><p>Anti dependence 反相关（WAR: Write after Read)<br>$$<br>r_3\leftarrow r_1\ op\ r_2\\<br>r_1\leftarrow r_4\ op\ r_5<br>$$</p>
 </li>
-<li><p>Output dependence 输出相关（WAW: Write after Write)<br>$$<br>r_3\leftarrow r_1\ op\ r_2\<br>r_5\leftarrow r_3\ op\ r_4\<br>r_3\leftarrow r_6\ op\ r_7\<br>$$</p>
+<li><p>Output dependence 输出相关（WAW: Write after Write)<br>$$<br>r_3\leftarrow r_1\ op\ r_2\\<br>r_5\leftarrow r_3\ op\ r_4\\<br>r_3\leftarrow r_6\ op\ r_7<br>$$</p>
 </li>
+<li></li>
 </ul>
-<p>可以发现，只有真数据相关是真的依靠前一条指令输出的数据，反相关和输出相关虽然也出现寄存器相同的情况，但并不是依赖前一天寄存器的值，而只是一个名字。例如反相关的第二条指令，如果换成<br>$$<br>r_3\leftarrow r_1\ op\ r_2\<br>r_6\leftarrow r_4\ op\ r_5<br>$$<br>意思其实是和原来的指令是一样的，所以可以通过寄存器重命名的方式来避免反相关和输出相关。</p>
+<p>可以发现，只有真数据相关是真的依靠前一条指令输出的数据，反相关和输出相关虽然也出现寄存器相同的情况，但并不是依赖前一天寄存器的值，而只是一个名字。例如反相关的第二条指令，如果换成<br>$$<br>r_3\leftarrow r_1\ op\ r_2\\<br>r_6\leftarrow r_4\ op\ r_5<br>$$<br>意思其实是和原来的指令是一样的，所以可以通过寄存器重命名的方式来避免反相关和输出相关。</p>
 <p>对于真数据相关的情况可以像结构冒险一样，插入bubble来解决数据冒险的办法，但这样的效率是不高的，有一些效率更高的解决办法：</p>
 <ul>
 <li>Data Forwarding &#x2F; Bypassing。</li>
