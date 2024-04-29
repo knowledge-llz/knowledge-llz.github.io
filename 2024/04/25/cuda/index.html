@@ -470,14 +470,14 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-check fa-fw"></i>更新日期:&nbsp;&nbsp;
-                    2024-04-28
+                    2024-04-29
                 </div>
                 
 
                 
                 <div class="info-break-policy">
                     <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
-                    3k
+                    6.1k
                 </div>
                 
 
@@ -667,7 +667,698 @@ __global__ <span class="token keyword">void</span> <span class="token function">
 <p><img src="/2024/04/25/cuda/warp-branch.png" alt="warp分支处理"></p>
 <p>最后提一嘴，warp为什么叫warp？warp的英文意思有”编织物的纱线”，我们看下面这张图，假如说一个thread就是一条线，warp则是在机器上并发处理的很多条线。</p>
 <p><img src="/2024/04/25/cuda/image-20240427152959024.png" alt="warp"></p>
-<h2 id="CUDA编程实战"><a href="#CUDA编程实战" class="headerlink" title="CUDA编程实战"></a>CUDA编程实战</h2><p>未完待续…</p>
+<h2 id="CUDA编程实战"><a href="#CUDA编程实战" class="headerlink" title="CUDA编程实战"></a>CUDA编程实战</h2><h3 id="Which-Thread"><a href="#Which-Thread" class="headerlink" title="Which Thread?"></a>Which Thread?</h3><p>CUDA程序中提供了 <code>blockIdx</code>, <code>threadIdx</code>, <code>blockDim</code>, <code>GridDim</code>来定位发起thread，下面我们发起1个grid，里面有2个block，每个block里有5个threads。</p>
+<p>程序让每个thread输出自己的id号。</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;stdio.h></span></span>
+
+__global__ <span class="token keyword">void</span> <span class="token function">print_id</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">int</span> id <span class="token operator">=</span> blockIdx<span class="token punctuation">.</span>x <span class="token operator">*</span> blockDim<span class="token punctuation">.</span>x <span class="token operator">+</span> threadIdx<span class="token punctuation">.</span>x<span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"This is thread %d\n"</span><span class="token punctuation">,</span> id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    print_id<span class="token operator">&lt;&lt;</span><span class="token operator">&lt;</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token operator">>></span><span class="token operator">></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">cudaDeviceSynchronize</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="Vector-ADD"><a href="#Vector-ADD" class="headerlink" title="Vector ADD"></a>Vector ADD</h3><p>下面我们将向量a与向量b逐元素相加，计算的结果为向量c。使用cpu与GPU分别实现向量相加，并比较执行速度。</p>
+<p>这里用到了”cudastart.h”定义了计算时间和初始化的函数：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">ifndef</span> <span class="token expression">CUDASTART_H</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">CUDASTART_H</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name function">CHECK</span><span class="token expression"><span class="token punctuation">(</span>call<span class="token punctuation">)</span></span><span class="token punctuation">\</span>
+<span class="token expression"><span class="token punctuation">&#123;</span></span><span class="token punctuation">\</span>
+  <span class="token expression"><span class="token keyword">const</span> <span class="token class-name">cudaError_t</span> error<span class="token operator">=</span>call<span class="token punctuation">;</span></span><span class="token punctuation">\</span>
+  <span class="token expression"><span class="token keyword">if</span><span class="token punctuation">(</span>error<span class="token operator">!=</span>cudaSuccess<span class="token punctuation">)</span></span><span class="token punctuation">\</span>
+  <span class="token expression"><span class="token punctuation">&#123;</span></span><span class="token punctuation">\</span>
+      <span class="token expression"><span class="token function">printf</span><span class="token punctuation">(</span></span><span class="token string">"ERROR: %s:%d,"</span><span class="token expression"><span class="token punctuation">,</span><span class="token constant">__FILE__</span><span class="token punctuation">,</span><span class="token constant">__LINE__</span><span class="token punctuation">)</span><span class="token punctuation">;</span></span><span class="token punctuation">\</span>
+      <span class="token expression"><span class="token function">printf</span><span class="token punctuation">(</span></span><span class="token string">"code:%d,reason:%s\n"</span><span class="token expression"><span class="token punctuation">,</span>error<span class="token punctuation">,</span><span class="token function">cudaGetErrorString</span><span class="token punctuation">(</span>error<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span></span><span class="token punctuation">\</span>
+      <span class="token expression"><span class="token function">exit</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span></span><span class="token punctuation">\</span>
+  <span class="token expression"><span class="token punctuation">&#125;</span></span><span class="token punctuation">\</span>
+<span class="token expression"><span class="token punctuation">&#125;</span></span></span>
+
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;time.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">ifdef</span> <span class="token expression">_WIN32</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span>	<span class="token directive keyword">include</span> <span class="token string">&lt;windows.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">else</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span>	<span class="token directive keyword">include</span> <span class="token string">&lt;sys/time.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">endif</span></span>
+
+<span class="token keyword">double</span> <span class="token function">cpuSecond</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">struct</span> <span class="token class-name">timeval</span> tp<span class="token punctuation">;</span>
+  <span class="token function">gettimeofday</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>tp<span class="token punctuation">,</span><span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">double</span><span class="token punctuation">)</span>tp<span class="token punctuation">.</span>tv_sec<span class="token operator">+</span><span class="token punctuation">(</span><span class="token keyword">double</span><span class="token punctuation">)</span>tp<span class="token punctuation">.</span>tv_usec<span class="token operator">*</span><span class="token number">1e-6</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">void</span> <span class="token function">initialData</span><span class="token punctuation">(</span><span class="token keyword">float</span><span class="token operator">*</span> ip<span class="token punctuation">,</span><span class="token keyword">int</span> size<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token class-name">time_t</span> t<span class="token punctuation">;</span>
+  <span class="token function">srand</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">unsigned</span> <span class="token punctuation">)</span><span class="token function">time</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>t<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span>i<span class="token operator">&lt;</span>size<span class="token punctuation">;</span>i<span class="token operator">++</span><span class="token punctuation">)</span>
+  <span class="token punctuation">&#123;</span>
+    ip<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token operator">=</span><span class="token punctuation">(</span><span class="token keyword">float</span><span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token function">rand</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">&amp;</span><span class="token number">0xffff</span><span class="token punctuation">)</span><span class="token operator">/</span><span class="token number">1000.0f</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">void</span> <span class="token function">initialData_int</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span> ip<span class="token punctuation">,</span> <span class="token keyword">int</span> size<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+	<span class="token class-name">time_t</span> t<span class="token punctuation">;</span>
+	<span class="token function">srand</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">unsigned</span><span class="token punctuation">)</span><span class="token function">time</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>t<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i<span class="token operator">&lt;</span>size<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span>
+	<span class="token punctuation">&#123;</span>
+		ip<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token keyword">int</span><span class="token punctuation">(</span><span class="token function">rand</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">&amp;</span><span class="token number">0xff</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">void</span> <span class="token function">initDevice</span><span class="token punctuation">(</span><span class="token keyword">int</span> devNum<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">int</span> dev <span class="token operator">=</span> devNum<span class="token punctuation">;</span>
+  cudaDeviceProp deviceProp<span class="token punctuation">;</span>
+  <span class="token function">CHECK</span><span class="token punctuation">(</span><span class="token function">cudaGetDeviceProperties</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>deviceProp<span class="token punctuation">,</span>dev<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Using device %d: %s\n"</span><span class="token punctuation">,</span>dev<span class="token punctuation">,</span>deviceProp<span class="token punctuation">.</span>name<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">CHECK</span><span class="token punctuation">(</span><span class="token function">cudaSetDevice</span><span class="token punctuation">(</span>dev<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">void</span> <span class="token function">checkResult</span><span class="token punctuation">(</span><span class="token keyword">float</span> <span class="token operator">*</span> hostRef<span class="token punctuation">,</span><span class="token keyword">float</span> <span class="token operator">*</span> gpuRef<span class="token punctuation">,</span><span class="token keyword">const</span> <span class="token keyword">int</span> N<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">double</span> epsilon<span class="token operator">=</span><span class="token number">1.0E-8</span><span class="token punctuation">;</span>
+  <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span>i<span class="token operator">&lt;</span>N<span class="token punctuation">;</span>i<span class="token operator">++</span><span class="token punctuation">)</span>
+  <span class="token punctuation">&#123;</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">abs</span><span class="token punctuation">(</span>hostRef<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token operator">-</span>gpuRef<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token operator">></span>epsilon<span class="token punctuation">)</span>
+    <span class="token punctuation">&#123;</span>
+      <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Results don\'t match!\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%f(hostRef[%d] )!= %f(gpuRef[%d])\n"</span><span class="token punctuation">,</span>hostRef<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span>i<span class="token punctuation">,</span>gpuRef<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">&#125;</span>
+  <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Check result success!\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">endif</span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>vector_add_gpu.cu</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;assert.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;time.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">"cudastart.h"</span></span>
+
+<span class="token keyword">const</span> <span class="token keyword">int</span> N <span class="token operator">=</span> <span class="token number">1</span> <span class="token operator">&lt;&lt;</span> <span class="token number">28</span><span class="token punctuation">;</span>
+
+<span class="token keyword">inline</span> <span class="token class-name">cudaError_t</span> <span class="token function">checkCuda</span><span class="token punctuation">(</span><span class="token class-name">cudaError_t</span> result<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>result <span class="token operator">!=</span> cudaSuccess<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">fprintf</span><span class="token punctuation">(</span><span class="token constant">stderr</span><span class="token punctuation">,</span> <span class="token string">"CUDA Runtime Error: %s\n"</span><span class="token punctuation">,</span> <span class="token function">cudaGetErrorString</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">assert</span><span class="token punctuation">(</span>result <span class="token operator">==</span> cudaSuccess<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+  <span class="token keyword">return</span> result<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">void</span> <span class="token function">initWith</span><span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span>a<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> N<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span>
+  <span class="token punctuation">&#123;</span>
+    a<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> i<span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+
+__global__ <span class="token keyword">void</span> <span class="token function">addVectorsInto</span><span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span>result<span class="token punctuation">,</span> <span class="token keyword">int</span> <span class="token operator">*</span>a<span class="token punctuation">,</span> <span class="token keyword">int</span> <span class="token operator">*</span>b<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">int</span> index <span class="token operator">=</span> threadIdx<span class="token punctuation">.</span>x <span class="token operator">+</span> blockIdx<span class="token punctuation">.</span>x <span class="token operator">*</span> blockDim<span class="token punctuation">.</span>x<span class="token punctuation">;</span>
+  <span class="token keyword">int</span> gridstride <span class="token operator">=</span> gridDim<span class="token punctuation">.</span>x <span class="token operator">*</span> blockDim<span class="token punctuation">.</span>x<span class="token punctuation">;</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> index<span class="token punctuation">;</span> i <span class="token operator">&lt;</span> N<span class="token punctuation">;</span> i <span class="token operator">+=</span> gridstride<span class="token punctuation">)</span>
+      result<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> a<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">+</span> b<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+  
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">void</span> <span class="token function">checkElementsAre</span><span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span>array<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span>
+  <span class="token punctuation">&#123;</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span>array<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">!=</span> <span class="token number">2</span> <span class="token operator">*</span> i<span class="token punctuation">)</span>
+    <span class="token punctuation">&#123;</span>
+      <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"FAIL: array[%d] - %d does not equal %d\n"</span><span class="token punctuation">,</span> i<span class="token punctuation">,</span> array<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token number">2</span> <span class="token operator">*</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token function">exit</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">&#125;</span>
+  <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"SUCCESS! All values added correctly.\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">void</span> <span class="token function">cpuAdd</span><span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span>h_a<span class="token punctuation">,</span> <span class="token keyword">int</span> <span class="token operator">*</span>h_b<span class="token punctuation">,</span> <span class="token keyword">int</span> <span class="token operator">*</span>h_c<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+    <span class="token keyword">int</span> tid <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>tid <span class="token operator">&lt;</span> N<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        h_c<span class="token punctuation">[</span>tid<span class="token punctuation">]</span> <span class="token operator">=</span> h_a<span class="token punctuation">[</span>tid<span class="token punctuation">]</span> <span class="token operator">+</span> h_b<span class="token punctuation">[</span>tid<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        tid <span class="token operator">+=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token class-name">size_t</span> size <span class="token operator">=</span> N <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  
+  <span class="token keyword">int</span> <span class="token operator">*</span>cpu_a <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">int</span> <span class="token operator">*</span>cpu_b <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">int</span> <span class="token operator">*</span>cpu_c <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token function">initWith</span><span class="token punctuation">(</span>cpu_a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">initWith</span><span class="token punctuation">(</span>cpu_b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">double</span> start_cpu <span class="token operator">=</span> <span class="token function">cpuSecond</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">cpuAdd</span><span class="token punctuation">(</span>cpu_a<span class="token punctuation">,</span> cpu_b<span class="token punctuation">,</span> cpu_c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">double</span> end_cpu <span class="token operator">=</span> <span class="token function">cpuSecond</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">checkElementsAre</span><span class="token punctuation">(</span>cpu_c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"vector add, CPU Time used: %f ms\n"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>end_cpu <span class="token operator">-</span> start_cpu<span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">1000</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">free</span><span class="token punctuation">(</span>cpu_a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">free</span><span class="token punctuation">(</span>cpu_b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">free</span><span class="token punctuation">(</span>cpu_c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  
+  <span class="token keyword">int</span> <span class="token operator">*</span>a<span class="token punctuation">;</span>
+  <span class="token keyword">int</span> <span class="token operator">*</span>b<span class="token punctuation">;</span>
+  <span class="token keyword">int</span> <span class="token operator">*</span>c<span class="token punctuation">;</span>
+  <span class="token keyword">int</span> deviceId<span class="token punctuation">;</span>
+  <span class="token function">cudaGetDevice</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>deviceId<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+  <span class="token function">checkCuda</span><span class="token punctuation">(</span><span class="token function">cudaMallocManaged</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>a<span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">checkCuda</span><span class="token punctuation">(</span><span class="token function">cudaMallocManaged</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>b<span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">checkCuda</span><span class="token punctuation">(</span><span class="token function">cudaMallocManaged</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>c<span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  
+  
+  <span class="token function">cudaMemPrefetchAsync</span><span class="token punctuation">(</span>a<span class="token punctuation">,</span> size<span class="token punctuation">,</span> cudaCpuDeviceId<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">cudaMemPrefetchAsync</span><span class="token punctuation">(</span>b<span class="token punctuation">,</span> size<span class="token punctuation">,</span> cudaCpuDeviceId<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">initWith</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">initWith</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">cudaMemPrefetchAsync</span><span class="token punctuation">(</span>a<span class="token punctuation">,</span> size<span class="token punctuation">,</span> deviceId<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">cudaMemPrefetchAsync</span><span class="token punctuation">(</span>b<span class="token punctuation">,</span> size<span class="token punctuation">,</span> deviceId<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token class-name">size_t</span> threadsPerBlock <span class="token operator">=</span> <span class="token number">256</span><span class="token punctuation">;</span>
+  <span class="token class-name">size_t</span> numberOfBlock <span class="token operator">=</span> <span class="token punctuation">(</span>N <span class="token operator">+</span> threadsPerBlock <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> threadsPerBlock<span class="token punctuation">;</span>
+  
+  <span class="token keyword">double</span> start <span class="token operator">=</span> <span class="token function">cpuSecond</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  addVectorsInto<span class="token operator">&lt;&lt;</span><span class="token operator">&lt;</span>numberOfBlock<span class="token punctuation">,</span> threadsPerBlock<span class="token operator">>></span><span class="token operator">></span><span class="token punctuation">(</span>c<span class="token punctuation">,</span> a<span class="token punctuation">,</span> b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">checkCuda</span><span class="token punctuation">(</span><span class="token function">cudaDeviceSynchronize</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">double</span> end <span class="token operator">=</span> <span class="token function">cpuSecond</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">checkElementsAre</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// Calculate elapsed time</span>
+  <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"vector add, GPU Time used: %f ms\n"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>end <span class="token operator">-</span> start<span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">1000</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token function">cudaFree</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">cudaFree</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">cudaFree</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>这段代码需要向GPU申请显存，用以存储数组。</p>
+<p><code>cudaMallocManaged</code> 和 <code>cudaMalloc</code> 都是 CUDA 中用于分配设备内存的函数，它们之间有几个重要的区别：</p>
+<ol>
+<li><strong>管理方式</strong>：<ul>
+<li><code>cudaMallocManaged</code> 分配的内存是统一内存 (Unified Memory)，可由 CPU 和 GPU 共享，无需显式地进行数据传输。这使得程序员可以更轻松地编写并行代码，而不必担心内存管理和数据传输。</li>
+<li><code>cudaMalloc</code> 分配的内存则是显式地分配给 GPU 使用的内存，需要通过显式的数据传输函数（如 <code>cudaMemcpy</code>）来在 CPU 和 GPU 之间传输数据。</li>
+</ul>
+</li>
+<li><strong>自动数据迁移</strong>：<ul>
+<li>统一内存由 CUDA 运行时自动管理数据的迁移。当 CPU 或 GPU 尝试访问未分配到当前设备的统一内存时，CUDA 运行时会自动将数据迁移到访问的设备上。</li>
+<li>对于 <code>cudaMalloc</code> 分配的内存，需要手动使用 <code>cudaMemcpy</code> 等函数进行数据传输。</li>
+</ul>
+</li>
+<li><strong>便利性</strong>：<ul>
+<li>使用 <code>cudaMallocManaged</code> 更加方便，因为无需手动管理数据的迁移和分配，程序员可以更专注于算法和逻辑的实现。</li>
+<li><code>cudaMalloc</code> 则需要更多的手动管理，包括数据传输和内存释放。</li>
+</ul>
+</li>
+</ol>
+<p>优缺点：</p>
+<ul>
+<li><code>cudaMallocManaged</code> 的优点在于简化了内存管理和数据传输，提高了编程的便利性和代码的可读性。同时，由于统一内存的存在，可以减少内存使用上的一些烦琐问题。</li>
+<li><code>cudaMalloc</code> 的优点在于更加灵活，程序员可以精确地控制内存的分配和数据传输，适用于需要更细粒度控制的情况。此外，对于某些特定的算法和应用场景，手动管理内存和数据传输可能会比统一内存更加高效。</li>
+</ul>
+<p>综上所述，选择使用 <code>cudaMallocManaged</code> 还是 <code>cudaMalloc</code> 取决于具体的应用场景和需求。</p>
+<h3 id="Reduction"><a href="#Reduction" class="headerlink" title="Reduction"></a>Reduction</h3><p>对数组进行归约操作。</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;cuda_runtime.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">"cudastart.h"</span></span>
+
+__global__ <span class="token keyword">void</span> <span class="token function">reduce_test</span><span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span>g_idata<span class="token punctuation">,</span> <span class="token keyword">int</span> <span class="token operator">*</span>sum<span class="token punctuation">,</span> <span class="token keyword">unsigned</span> <span class="token keyword">int</span> n<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+	<span class="token keyword">int</span> idx <span class="token operator">=</span> blockIdx<span class="token punctuation">.</span>x<span class="token operator">*</span>blockDim<span class="token punctuation">.</span>x <span class="token operator">+</span> threadIdx<span class="token punctuation">.</span>x<span class="token punctuation">;</span>
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>idx <span class="token operator">&lt;</span> n<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+		<span class="token function">atomicAdd</span><span class="token punctuation">(</span>sum<span class="token punctuation">,</span> g_idata<span class="token punctuation">[</span>idx<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token comment">// sum[0] += g_idata[idx];</span>
+	<span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+
+__global__ <span class="token keyword">void</span> <span class="token function">reduceNeighbored</span><span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span> g_idata<span class="token punctuation">,</span><span class="token keyword">int</span> <span class="token operator">*</span> g_odata<span class="token punctuation">,</span><span class="token keyword">unsigned</span> <span class="token keyword">int</span> n<span class="token punctuation">)</span> 
+<span class="token punctuation">&#123;</span>
+	<span class="token comment">//set thread ID</span>
+	<span class="token keyword">unsigned</span> <span class="token keyword">int</span> tid <span class="token operator">=</span> threadIdx<span class="token punctuation">.</span>x<span class="token punctuation">;</span>
+	<span class="token comment">//boundary check</span>
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>tid <span class="token operator">>=</span> n<span class="token punctuation">)</span> <span class="token keyword">return</span><span class="token punctuation">;</span>
+	<span class="token comment">//convert global data pointer to the </span>
+	<span class="token keyword">int</span> <span class="token operator">*</span>idata <span class="token operator">=</span> g_idata <span class="token operator">+</span> blockIdx<span class="token punctuation">.</span>x<span class="token operator">*</span>blockDim<span class="token punctuation">.</span>x<span class="token punctuation">;</span>
+	<span class="token comment">//in-place reduction in global memory</span>
+	<span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> stride <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> stride <span class="token operator">&lt;</span> blockDim<span class="token punctuation">.</span>x<span class="token punctuation">;</span> stride <span class="token operator">*=</span> <span class="token number">2</span><span class="token punctuation">)</span>
+	<span class="token punctuation">&#123;</span>
+		<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>tid <span class="token operator">%</span> <span class="token punctuation">(</span><span class="token number">2</span> <span class="token operator">*</span> stride<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span>
+		<span class="token punctuation">&#123;</span>
+			idata<span class="token punctuation">[</span>tid<span class="token punctuation">]</span> <span class="token operator">+=</span> idata<span class="token punctuation">[</span>tid <span class="token operator">+</span> stride<span class="token punctuation">]</span><span class="token punctuation">;</span>
+		<span class="token punctuation">&#125;</span>
+		<span class="token comment">//synchronize within block</span>
+		<span class="token function">__syncthreads</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+	<span class="token comment">//write result for this block to global mem</span>
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>tid <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span>
+		g_odata<span class="token punctuation">[</span>blockIdx<span class="token punctuation">.</span>x<span class="token punctuation">]</span> <span class="token operator">=</span> idata<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+<span class="token punctuation">&#125;</span>
+
+__global__ <span class="token keyword">void</span> <span class="token function">reduceNeighboredLess</span><span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span> g_idata<span class="token punctuation">,</span><span class="token keyword">int</span> <span class="token operator">*</span>g_odata<span class="token punctuation">,</span><span class="token keyword">unsigned</span> <span class="token keyword">int</span> n<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+	<span class="token keyword">unsigned</span> <span class="token keyword">int</span> tid <span class="token operator">=</span> threadIdx<span class="token punctuation">.</span>x<span class="token punctuation">;</span>
+	<span class="token keyword">unsigned</span> idx <span class="token operator">=</span> blockIdx<span class="token punctuation">.</span>x<span class="token operator">*</span>blockDim<span class="token punctuation">.</span>x <span class="token operator">+</span> threadIdx<span class="token punctuation">.</span>x<span class="token punctuation">;</span>
+	<span class="token comment">// convert global data pointer to the local point of this block</span>
+	<span class="token keyword">int</span> <span class="token operator">*</span>idata <span class="token operator">=</span> g_idata <span class="token operator">+</span> blockIdx<span class="token punctuation">.</span>x<span class="token operator">*</span>blockDim<span class="token punctuation">.</span>x<span class="token punctuation">;</span>
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>idx <span class="token operator">></span> n<span class="token punctuation">)</span>
+		<span class="token keyword">return</span><span class="token punctuation">;</span>
+	<span class="token comment">//in-place reduction in global memory</span>
+	<span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> stride <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> stride <span class="token operator">&lt;</span> blockDim<span class="token punctuation">.</span>x<span class="token punctuation">;</span> stride <span class="token operator">*=</span> <span class="token number">2</span><span class="token punctuation">)</span>
+	<span class="token punctuation">&#123;</span>
+		<span class="token comment">//convert tid into local array index</span>
+		<span class="token keyword">int</span> index <span class="token operator">=</span> <span class="token number">2</span> <span class="token operator">*</span> stride <span class="token operator">*</span>tid<span class="token punctuation">;</span>
+		<span class="token keyword">if</span> <span class="token punctuation">(</span>index <span class="token operator">&lt;</span> blockDim<span class="token punctuation">.</span>x<span class="token punctuation">)</span>
+		<span class="token punctuation">&#123;</span>
+			idata<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">+=</span> idata<span class="token punctuation">[</span>index <span class="token operator">+</span> stride<span class="token punctuation">]</span><span class="token punctuation">;</span>
+		<span class="token punctuation">&#125;</span>
+		<span class="token function">__syncthreads</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+	<span class="token comment">//write result for this block to global men</span>
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>tid <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span>
+		g_odata<span class="token punctuation">[</span>blockIdx<span class="token punctuation">.</span>x<span class="token punctuation">]</span> <span class="token operator">=</span> idata<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+__global__ <span class="token keyword">void</span> <span class="token function">reduceInterleaved</span><span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span> g_idata<span class="token punctuation">,</span> <span class="token keyword">int</span> <span class="token operator">*</span>g_odata<span class="token punctuation">,</span> <span class="token keyword">unsigned</span> <span class="token keyword">int</span> n<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+	<span class="token keyword">unsigned</span> <span class="token keyword">int</span> tid <span class="token operator">=</span> threadIdx<span class="token punctuation">.</span>x<span class="token punctuation">;</span>
+	<span class="token keyword">unsigned</span> idx <span class="token operator">=</span> blockIdx<span class="token punctuation">.</span>x<span class="token operator">*</span>blockDim<span class="token punctuation">.</span>x <span class="token operator">+</span> threadIdx<span class="token punctuation">.</span>x<span class="token punctuation">;</span>
+	<span class="token comment">// convert global data pointer to the local point of this block</span>
+	<span class="token keyword">int</span> <span class="token operator">*</span>idata <span class="token operator">=</span> g_idata <span class="token operator">+</span> blockIdx<span class="token punctuation">.</span>x<span class="token operator">*</span>blockDim<span class="token punctuation">.</span>x<span class="token punctuation">;</span>
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>idx <span class="token operator">>=</span> n<span class="token punctuation">)</span>
+		<span class="token keyword">return</span><span class="token punctuation">;</span>
+	<span class="token comment">//in-place reduction in global memory</span>
+	<span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> stride <span class="token operator">=</span> blockDim<span class="token punctuation">.</span>x<span class="token operator">/</span><span class="token number">2</span><span class="token punctuation">;</span> stride <span class="token operator">></span><span class="token number">0</span><span class="token punctuation">;</span> stride <span class="token operator">>>=</span><span class="token number">1</span><span class="token punctuation">)</span>
+	<span class="token punctuation">&#123;</span>
+		
+		<span class="token keyword">if</span> <span class="token punctuation">(</span>tid <span class="token operator">&lt;</span>stride<span class="token punctuation">)</span>
+		<span class="token punctuation">&#123;</span>
+			idata<span class="token punctuation">[</span>tid<span class="token punctuation">]</span> <span class="token operator">+=</span> idata<span class="token punctuation">[</span>tid <span class="token operator">+</span> stride<span class="token punctuation">]</span><span class="token punctuation">;</span>
+		<span class="token punctuation">&#125;</span>
+		<span class="token function">__syncthreads</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+	<span class="token comment">//write result for this block to global men</span>
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>tid <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span>
+		g_odata<span class="token punctuation">[</span>blockIdx<span class="token punctuation">.</span>x<span class="token punctuation">]</span> <span class="token operator">=</span> idata<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+__global__ <span class="token keyword">void</span> <span class="token function">reduceInterleaved_share</span><span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span> g_idata<span class="token punctuation">,</span> <span class="token keyword">int</span> <span class="token operator">*</span>g_odata<span class="token punctuation">,</span> <span class="token keyword">unsigned</span> <span class="token keyword">int</span> n<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>	
+	__shared__ <span class="token keyword">int</span> sh_arr<span class="token punctuation">[</span><span class="token number">1024</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+	<span class="token keyword">unsigned</span> <span class="token keyword">int</span> tid <span class="token operator">=</span> threadIdx<span class="token punctuation">.</span>x<span class="token punctuation">;</span>
+	<span class="token keyword">unsigned</span> idx <span class="token operator">=</span> blockIdx<span class="token punctuation">.</span>x<span class="token operator">*</span>blockDim<span class="token punctuation">.</span>x <span class="token operator">+</span> threadIdx<span class="token punctuation">.</span>x<span class="token punctuation">;</span>
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>idx <span class="token operator">>=</span> n<span class="token punctuation">)</span>
+		<span class="token keyword">return</span><span class="token punctuation">;</span>
+	sh_arr<span class="token punctuation">[</span>tid<span class="token punctuation">]</span> <span class="token operator">=</span> g_idata<span class="token punctuation">[</span>idx<span class="token punctuation">]</span><span class="token punctuation">;</span>
+	<span class="token function">__syncthreads</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token comment">//in-place reduction in global memory</span>
+	<span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> stride <span class="token operator">=</span> blockDim<span class="token punctuation">.</span>x<span class="token operator">/</span><span class="token number">2</span><span class="token punctuation">;</span> stride <span class="token operator">></span><span class="token number">0</span><span class="token punctuation">;</span> stride <span class="token operator">>>=</span><span class="token number">1</span><span class="token punctuation">)</span>
+	<span class="token punctuation">&#123;</span>
+		
+		<span class="token keyword">if</span> <span class="token punctuation">(</span>tid <span class="token operator">&lt;</span>stride<span class="token punctuation">)</span>
+		<span class="token punctuation">&#123;</span>
+			sh_arr<span class="token punctuation">[</span>tid<span class="token punctuation">]</span> <span class="token operator">+=</span> sh_arr<span class="token punctuation">[</span>tid <span class="token operator">+</span> stride<span class="token punctuation">]</span><span class="token punctuation">;</span>
+		<span class="token punctuation">&#125;</span>
+		<span class="token function">__syncthreads</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+	<span class="token comment">//write result for this block to global men</span>
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>tid <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span>
+		g_odata<span class="token punctuation">[</span>blockIdx<span class="token punctuation">.</span>x<span class="token punctuation">]</span> <span class="token operator">=</span> sh_arr<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token keyword">int</span> argc<span class="token punctuation">,</span><span class="token keyword">char</span><span class="token operator">*</span><span class="token operator">*</span> argv<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+	<span class="token function">initDevice</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	
+	<span class="token comment">//initialization</span>
+
+	<span class="token keyword">int</span> size <span class="token operator">=</span> <span class="token number">1</span> <span class="token operator">&lt;&lt;</span> <span class="token number">24</span><span class="token punctuation">;</span>
+	<span class="token comment">// printf("	with array size %d  ", size);</span>
+
+	<span class="token comment">//execution configuration</span>
+	<span class="token keyword">int</span> blocksize <span class="token operator">=</span> <span class="token number">1024</span><span class="token punctuation">;</span>
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>argc <span class="token operator">></span> <span class="token number">1</span><span class="token punctuation">)</span>
+	<span class="token punctuation">&#123;</span>
+		blocksize <span class="token operator">=</span> <span class="token function">atoi</span><span class="token punctuation">(</span>argv<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>   <span class="token comment">//从命令行输入设置block大小</span>
+	<span class="token punctuation">&#125;</span>
+	dim3 <span class="token function">block</span><span class="token punctuation">(</span>blocksize<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	dim3 <span class="token function">grid</span><span class="token punctuation">(</span><span class="token punctuation">(</span>size <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> block<span class="token punctuation">.</span>x <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"grid %d block %d \n"</span><span class="token punctuation">,</span> grid<span class="token punctuation">.</span>x<span class="token punctuation">,</span> block<span class="token punctuation">.</span>x<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token comment">//allocate host memory</span>
+	<span class="token class-name">size_t</span> bytes <span class="token operator">=</span> size <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">int</span> <span class="token operator">*</span>idata_host <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>bytes<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">int</span> <span class="token operator">*</span>odata_host <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>grid<span class="token punctuation">.</span>x <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">int</span> <span class="token operator">*</span> tmp <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>bytes<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token comment">//initialize the array</span>
+	<span class="token function">initialData_int</span><span class="token punctuation">(</span>idata_host<span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>size <span class="token operator">&lt;</span> <span class="token number">100</span><span class="token punctuation">)</span>
+	<span class="token punctuation">&#123;</span>
+		<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Array: ["</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> size<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span>
+			<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d, "</span><span class="token punctuation">,</span> idata_host<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"]\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+
+	<span class="token function">memcpy</span><span class="token punctuation">(</span>tmp<span class="token punctuation">,</span> idata_host<span class="token punctuation">,</span> bytes<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">double</span> timeStart<span class="token punctuation">,</span> timeElaps<span class="token punctuation">;</span>
+	<span class="token keyword">int</span> gpu_sum <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+	<span class="token comment">// device memory</span>
+	<span class="token keyword">int</span> <span class="token operator">*</span> idata_dev <span class="token operator">=</span> <span class="token constant">NULL</span><span class="token punctuation">;</span>
+	<span class="token keyword">int</span> <span class="token operator">*</span> odata_dev <span class="token operator">=</span> <span class="token constant">NULL</span><span class="token punctuation">;</span>
+	<span class="token function">CHECK</span><span class="token punctuation">(</span><span class="token function">cudaMalloc</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>idata_dev<span class="token punctuation">,</span> bytes<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">CHECK</span><span class="token punctuation">(</span><span class="token function">cudaMalloc</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>odata_dev<span class="token punctuation">,</span> grid<span class="token punctuation">.</span>x <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token comment">//cpu reduction 对照组</span>
+	<span class="token keyword">int</span> cpu_sum <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+	timeStart <span class="token operator">=</span> <span class="token function">cpuSecond</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> size<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span>
+		cpu_sum <span class="token operator">+=</span> tmp<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+	timeElaps <span class="token operator">=</span> <span class="token number">1000</span><span class="token operator">*</span><span class="token punctuation">(</span><span class="token function">cpuSecond</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> timeStart<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"cpu sum:%d \n"</span><span class="token punctuation">,</span> cpu_sum<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"cpu reduction elapsed %lf ms cpu_sum: %d\n"</span><span class="token punctuation">,</span> timeElaps<span class="token punctuation">,</span> cpu_sum<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token comment">//kernel 0 reduce</span>
+	<span class="token keyword">int</span> <span class="token operator">*</span>reduce_sum<span class="token punctuation">;</span>
+	<span class="token function">CHECK</span><span class="token punctuation">(</span><span class="token function">cudaMalloc</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>reduce_sum<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">CHECK</span><span class="token punctuation">(</span><span class="token function">cudaMemset</span><span class="token punctuation">(</span>reduce_sum<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">CHECK</span><span class="token punctuation">(</span><span class="token function">cudaMemcpy</span><span class="token punctuation">(</span>idata_dev<span class="token punctuation">,</span> idata_host<span class="token punctuation">,</span> bytes<span class="token punctuation">,</span> cudaMemcpyHostToDevice<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">cudaDeviceSynchronize</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	
+	timeStart <span class="token operator">=</span> <span class="token function">cpuSecond</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	reduce_test <span class="token operator">&lt;&lt;</span><span class="token operator">&lt;</span>grid<span class="token punctuation">,</span> block <span class="token operator">>></span><span class="token operator">></span><span class="token punctuation">(</span>idata_dev<span class="token punctuation">,</span> reduce_sum<span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">cudaDeviceSynchronize</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">cudaMemcpy</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>gpu_sum<span class="token punctuation">,</span> reduce_sum<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">,</span> cudaMemcpyDeviceToHost<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"gpu sum:%d \n"</span><span class="token punctuation">,</span> gpu_sum<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"gpu atomicAdd elapsed %lf ms     &lt;&lt;&lt;grid %d block %d>>>\n"</span><span class="token punctuation">,</span>
+		timeElaps<span class="token punctuation">,</span> grid<span class="token punctuation">.</span>x<span class="token punctuation">,</span> block<span class="token punctuation">.</span>x<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	
+	<span class="token function">CHECK</span><span class="token punctuation">(</span><span class="token function">cudaFree</span><span class="token punctuation">(</span>reduce_sum<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	
+	<span class="token comment">//kernel 1 reduceNeighbored</span>
+
+	<span class="token function">CHECK</span><span class="token punctuation">(</span><span class="token function">cudaMemcpy</span><span class="token punctuation">(</span>idata_dev<span class="token punctuation">,</span> idata_host<span class="token punctuation">,</span> bytes<span class="token punctuation">,</span> cudaMemcpyHostToDevice<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">CHECK</span><span class="token punctuation">(</span><span class="token function">cudaDeviceSynchronize</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	timeStart <span class="token operator">=</span> <span class="token function">cpuSecond</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	reduceNeighbored <span class="token operator">&lt;&lt;</span><span class="token operator">&lt;</span>grid<span class="token punctuation">,</span> block <span class="token operator">>></span><span class="token operator">></span><span class="token punctuation">(</span>idata_dev<span class="token punctuation">,</span> odata_dev<span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">cudaDeviceSynchronize</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">cudaMemcpy</span><span class="token punctuation">(</span>odata_host<span class="token punctuation">,</span> odata_dev<span class="token punctuation">,</span> grid<span class="token punctuation">.</span>x <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">,</span> cudaMemcpyDeviceToHost<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	gpu_sum <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+	<span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> grid<span class="token punctuation">.</span>x<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span>
+		gpu_sum <span class="token operator">+=</span> odata_host<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>	
+    timeElaps <span class="token operator">=</span> <span class="token number">1000</span><span class="token operator">*</span><span class="token punctuation">(</span><span class="token function">cpuSecond</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> timeStart<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"gpu sum:%d \n"</span><span class="token punctuation">,</span> gpu_sum<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"gpu reduceNeighbored elapsed %lf ms     &lt;&lt;&lt;grid %d block %d>>>\n"</span><span class="token punctuation">,</span>
+		timeElaps<span class="token punctuation">,</span> grid<span class="token punctuation">.</span>x<span class="token punctuation">,</span> block<span class="token punctuation">.</span>x<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token comment">//kernel 2 reduceNeighboredless</span>
+	<span class="token function">CHECK</span><span class="token punctuation">(</span><span class="token function">cudaMemcpy</span><span class="token punctuation">(</span>idata_dev<span class="token punctuation">,</span> idata_host<span class="token punctuation">,</span> bytes<span class="token punctuation">,</span> cudaMemcpyHostToDevice<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">CHECK</span><span class="token punctuation">(</span><span class="token function">cudaDeviceSynchronize</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	timeStart <span class="token operator">=</span> <span class="token function">cpuSecond</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	reduceNeighboredLess <span class="token operator">&lt;&lt;</span><span class="token operator">&lt;</span>grid<span class="token punctuation">,</span> block <span class="token operator">>></span><span class="token operator">></span><span class="token punctuation">(</span>idata_dev<span class="token punctuation">,</span> odata_dev<span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">cudaDeviceSynchronize</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">cudaMemcpy</span><span class="token punctuation">(</span>odata_host<span class="token punctuation">,</span> odata_dev<span class="token punctuation">,</span> grid<span class="token punctuation">.</span>x <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">,</span> cudaMemcpyDeviceToHost<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	gpu_sum <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+	<span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> grid<span class="token punctuation">.</span>x<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span>
+		gpu_sum <span class="token operator">+=</span> odata_host<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>	
+    timeElaps <span class="token operator">=</span> <span class="token number">1000</span><span class="token operator">*</span><span class="token punctuation">(</span><span class="token function">cpuSecond</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> timeStart<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"gpu sum:%d \n"</span><span class="token punctuation">,</span> gpu_sum<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"gpu reduceNeighboredless elapsed %lf ms     &lt;&lt;&lt;grid %d block %d>>>\n"</span><span class="token punctuation">,</span>
+		timeElaps<span class="token punctuation">,</span> grid<span class="token punctuation">.</span>x<span class="token punctuation">,</span> block<span class="token punctuation">.</span>x<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">//kernel 3 reduceInterleaved</span>
+	<span class="token function">CHECK</span><span class="token punctuation">(</span><span class="token function">cudaMemcpy</span><span class="token punctuation">(</span>idata_dev<span class="token punctuation">,</span> idata_host<span class="token punctuation">,</span> bytes<span class="token punctuation">,</span> cudaMemcpyHostToDevice<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">CHECK</span><span class="token punctuation">(</span><span class="token function">cudaDeviceSynchronize</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	timeStart <span class="token operator">=</span> <span class="token function">cpuSecond</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	reduceInterleaved <span class="token operator">&lt;&lt;</span><span class="token operator">&lt;</span>grid<span class="token punctuation">,</span> block <span class="token operator">>></span><span class="token operator">></span><span class="token punctuation">(</span>idata_dev<span class="token punctuation">,</span> odata_dev<span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">cudaDeviceSynchronize</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">cudaMemcpy</span><span class="token punctuation">(</span>odata_host<span class="token punctuation">,</span> odata_dev<span class="token punctuation">,</span> grid<span class="token punctuation">.</span>x <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">,</span> cudaMemcpyDeviceToHost<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	gpu_sum <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+	<span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> grid<span class="token punctuation">.</span>x<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span>
+		gpu_sum <span class="token operator">+=</span> odata_host<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>	
+    timeElaps <span class="token operator">=</span> <span class="token number">1000</span><span class="token operator">*</span><span class="token punctuation">(</span><span class="token function">cpuSecond</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> timeStart<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"gpu sum:%d \n"</span><span class="token punctuation">,</span> gpu_sum<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"gpu reduceInterleaved elapsed %lf ms     &lt;&lt;&lt;grid %d block %d>>>\n"</span><span class="token punctuation">,</span>
+		timeElaps<span class="token punctuation">,</span> grid<span class="token punctuation">.</span>x<span class="token punctuation">,</span> block<span class="token punctuation">.</span>x<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+	<span class="token comment">//kernel 4 reduceInterleaved shared memory</span>
+	<span class="token function">CHECK</span><span class="token punctuation">(</span><span class="token function">cudaMemcpy</span><span class="token punctuation">(</span>idata_dev<span class="token punctuation">,</span> idata_host<span class="token punctuation">,</span> bytes<span class="token punctuation">,</span> cudaMemcpyHostToDevice<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">CHECK</span><span class="token punctuation">(</span><span class="token function">cudaDeviceSynchronize</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	timeStart <span class="token operator">=</span> <span class="token function">cpuSecond</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	reduceInterleaved_share <span class="token operator">&lt;&lt;</span><span class="token operator">&lt;</span>grid<span class="token punctuation">,</span> block <span class="token operator">>></span><span class="token operator">></span><span class="token punctuation">(</span>idata_dev<span class="token punctuation">,</span> odata_dev<span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">cudaDeviceSynchronize</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">cudaMemcpy</span><span class="token punctuation">(</span>odata_host<span class="token punctuation">,</span> odata_dev<span class="token punctuation">,</span> grid<span class="token punctuation">.</span>x <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">,</span> cudaMemcpyDeviceToHost<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	gpu_sum <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+	<span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> grid<span class="token punctuation">.</span>x<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span>
+		gpu_sum <span class="token operator">+=</span> odata_host<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>	
+    timeElaps <span class="token operator">=</span> <span class="token number">1000</span><span class="token operator">*</span><span class="token punctuation">(</span><span class="token function">cpuSecond</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> timeStart<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"gpu sum:%d \n"</span><span class="token punctuation">,</span> gpu_sum<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"gpu reduceInterleaved elapsed %lf ms     &lt;&lt;&lt;grid %d block %d>>>\n"</span><span class="token punctuation">,</span>
+		timeElaps<span class="token punctuation">,</span> grid<span class="token punctuation">.</span>x<span class="token punctuation">,</span> block<span class="token punctuation">.</span>x<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+	<span class="token comment">// free host memory</span>
+
+	<span class="token function">free</span><span class="token punctuation">(</span>idata_host<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">free</span><span class="token punctuation">(</span>odata_host<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">CHECK</span><span class="token punctuation">(</span><span class="token function">cudaFree</span><span class="token punctuation">(</span>idata_dev<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">CHECK</span><span class="token punctuation">(</span><span class="token function">cudaFree</span><span class="token punctuation">(</span>odata_dev<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token comment">//reset device</span>
+	<span class="token function">cudaDeviceReset</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token comment">//check the results</span>
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>gpu_sum <span class="token operator">==</span> cpu_sum<span class="token punctuation">)</span>
+	<span class="token punctuation">&#123;</span>
+		<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Test success!\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+	<span class="token keyword">return</span> EXIT_SUCCESS<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="Matrix-multiplication"><a href="#Matrix-multiplication" class="headerlink" title="Matrix multiplication"></a>Matrix multiplication</h3><p>计算二维矩阵乘法。</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;cuda_runtime.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">"cudastart.h"</span></span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">N</span>  <span class="token expression"><span class="token number">1024</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">tile_size</span> <span class="token expression"><span class="token number">16</span></span></span>
+
+<span class="token keyword">void</span> <span class="token function">matrixMulCPU</span><span class="token punctuation">(</span> <span class="token keyword">int</span> <span class="token operator">*</span> a<span class="token punctuation">,</span> <span class="token keyword">int</span> <span class="token operator">*</span> b<span class="token punctuation">,</span> <span class="token keyword">int</span> <span class="token operator">*</span> c <span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">int</span> val <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span><span class="token punctuation">(</span> <span class="token keyword">int</span> row <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> row <span class="token operator">&lt;</span> N<span class="token punctuation">;</span> <span class="token operator">++</span>row <span class="token punctuation">)</span>
+        <span class="token keyword">for</span><span class="token punctuation">(</span> <span class="token keyword">int</span> col <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> col <span class="token operator">&lt;</span> N<span class="token punctuation">;</span> <span class="token operator">++</span>col <span class="token punctuation">)</span>
+        <span class="token punctuation">&#123;</span>
+            val <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span> <span class="token keyword">int</span> k <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> k <span class="token operator">&lt;</span> N<span class="token punctuation">;</span> <span class="token operator">++</span>k <span class="token punctuation">)</span>
+                val <span class="token operator">+=</span> a<span class="token punctuation">[</span>row <span class="token operator">*</span> N <span class="token operator">+</span> k<span class="token punctuation">]</span> <span class="token operator">*</span> b<span class="token punctuation">[</span>k <span class="token operator">*</span> N <span class="token operator">+</span> col<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            c<span class="token punctuation">[</span>row <span class="token operator">*</span> N <span class="token operator">+</span> col<span class="token punctuation">]</span> <span class="token operator">=</span> val<span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+
+__global__ <span class="token keyword">void</span> <span class="token function">matrixMulGPU</span><span class="token punctuation">(</span> <span class="token keyword">int</span> <span class="token operator">*</span> a<span class="token punctuation">,</span> <span class="token keyword">int</span> <span class="token operator">*</span> b<span class="token punctuation">,</span> <span class="token keyword">int</span> <span class="token operator">*</span> c <span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">int</span> row <span class="token operator">=</span> blockIdx<span class="token punctuation">.</span>x <span class="token operator">*</span> blockDim<span class="token punctuation">.</span>x <span class="token operator">+</span> threadIdx<span class="token punctuation">.</span>x<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> col <span class="token operator">=</span> blockIdx<span class="token punctuation">.</span>y <span class="token operator">*</span> blockDim<span class="token punctuation">.</span>y <span class="token operator">+</span> threadIdx<span class="token punctuation">.</span>y<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> val <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> N<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        val <span class="token operator">+=</span> a<span class="token punctuation">[</span>row <span class="token operator">*</span> N <span class="token operator">+</span> i<span class="token punctuation">]</span> <span class="token operator">*</span> b<span class="token punctuation">[</span>i <span class="token operator">*</span> N <span class="token operator">+</span> col<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    c<span class="token punctuation">[</span>row <span class="token operator">*</span> N <span class="token operator">+</span> col<span class="token punctuation">]</span> <span class="token operator">=</span> val<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+__global__ <span class="token keyword">void</span> <span class="token function">matrixGPU_tile</span><span class="token punctuation">(</span> <span class="token keyword">int</span> <span class="token operator">*</span> a<span class="token punctuation">,</span> <span class="token keyword">int</span> <span class="token operator">*</span> b<span class="token punctuation">,</span> <span class="token keyword">int</span> <span class="token operator">*</span> c <span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    __shared__ <span class="token keyword">int</span> tile_a<span class="token punctuation">[</span>tile_size<span class="token punctuation">]</span><span class="token punctuation">[</span>tile_size<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    __shared__ <span class="token keyword">int</span> tile_b<span class="token punctuation">[</span>tile_size<span class="token punctuation">]</span><span class="token punctuation">[</span>tile_size<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> row <span class="token operator">=</span> blockIdx<span class="token punctuation">.</span>x <span class="token operator">*</span> blockDim<span class="token punctuation">.</span>x <span class="token operator">+</span> threadIdx<span class="token punctuation">.</span>x<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> col <span class="token operator">=</span> blockIdx<span class="token punctuation">.</span>y <span class="token operator">*</span> blockDim<span class="token punctuation">.</span>y <span class="token operator">+</span> threadIdx<span class="token punctuation">.</span>y<span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> N <span class="token operator">/</span> tile_size<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        tile_a<span class="token punctuation">[</span>threadIdx<span class="token punctuation">.</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>threadIdx<span class="token punctuation">.</span>y<span class="token punctuation">]</span> <span class="token operator">=</span> a<span class="token punctuation">[</span>row <span class="token operator">*</span> N <span class="token operator">+</span> i <span class="token operator">*</span> tile_size <span class="token operator">+</span> threadIdx<span class="token punctuation">.</span>y<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        tile_b<span class="token punctuation">[</span>threadIdx<span class="token punctuation">.</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>threadIdx<span class="token punctuation">.</span>y<span class="token punctuation">]</span> <span class="token operator">=</span> b<span class="token punctuation">[</span><span class="token punctuation">(</span>i <span class="token operator">*</span> tile_size <span class="token operator">+</span> threadIdx<span class="token punctuation">.</span>x<span class="token punctuation">)</span> <span class="token operator">*</span> N <span class="token operator">+</span> col<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token function">__syncthreads</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> tile_size<span class="token punctuation">;</span> <span class="token operator">++</span>j<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+            c<span class="token punctuation">[</span>row <span class="token operator">*</span> N <span class="token operator">+</span> col<span class="token punctuation">]</span> <span class="token operator">+=</span> tile_a<span class="token punctuation">[</span>threadIdx<span class="token punctuation">.</span>x<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">*</span> tile_b<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">[</span>threadIdx<span class="token punctuation">.</span>y<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token function">__syncthreads</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">void</span> <span class="token function">check</span><span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span>c_cpu<span class="token punctuation">,</span> <span class="token keyword">int</span> <span class="token operator">*</span>c_gpu<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+    bool error <span class="token operator">=</span> false<span class="token punctuation">;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span> <span class="token keyword">int</span> row <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> row <span class="token operator">&lt;</span> N <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span>error<span class="token punctuation">;</span> <span class="token operator">++</span>row <span class="token punctuation">)</span>
+        <span class="token keyword">for</span><span class="token punctuation">(</span> <span class="token keyword">int</span> col <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> col <span class="token operator">&lt;</span> N <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span>error<span class="token punctuation">;</span> <span class="token operator">++</span>col <span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>c_cpu<span class="token punctuation">[</span>row <span class="token operator">*</span> N <span class="token operator">+</span> col<span class="token punctuation">]</span> <span class="token operator">!=</span> c_gpu<span class="token punctuation">[</span>row <span class="token operator">*</span> N <span class="token operator">+</span> col<span class="token punctuation">]</span><span class="token punctuation">)</span>
+                <span class="token punctuation">&#123;</span>
+                    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"FOUND ERROR at c[%d][%d]\n"</span><span class="token punctuation">,</span> row<span class="token punctuation">,</span> col<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    error <span class="token operator">=</span> true<span class="token punctuation">;</span>
+                    <span class="token keyword">break</span><span class="token punctuation">;</span>
+                <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>error<span class="token punctuation">)</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Success!\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">int</span> <span class="token operator">*</span>a<span class="token punctuation">,</span> <span class="token operator">*</span>b<span class="token punctuation">,</span> <span class="token operator">*</span>c_cpu<span class="token punctuation">,</span> <span class="token operator">*</span>c_gpu<span class="token punctuation">,</span> <span class="token operator">*</span>c_gpu_opt<span class="token punctuation">;</span> <span class="token comment">// Allocate a solution matrix for both the CPU and the GPU operations</span>
+    <span class="token keyword">int</span> size <span class="token operator">=</span> N <span class="token operator">*</span> N <span class="token operator">*</span> <span class="token keyword">sizeof</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// Number of bytes of an N x N matrix</span>
+    <span class="token keyword">double</span> timeStart<span class="token punctuation">,</span> timeElaps<span class="token punctuation">;</span>
+    
+    <span class="token comment">// Allocate memory</span>
+    <span class="token function">cudaMallocManaged</span> <span class="token punctuation">(</span><span class="token operator">&amp;</span>a<span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">cudaMallocManaged</span> <span class="token punctuation">(</span><span class="token operator">&amp;</span>b<span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">cudaMallocManaged</span> <span class="token punctuation">(</span><span class="token operator">&amp;</span>c_cpu<span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">cudaMallocManaged</span> <span class="token punctuation">(</span><span class="token operator">&amp;</span>c_gpu<span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">cudaMallocManaged</span> <span class="token punctuation">(</span><span class="token operator">&amp;</span>c_gpu_opt<span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">initialData_int</span><span class="token punctuation">(</span>a<span class="token punctuation">,</span> N <span class="token operator">*</span> N<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">initialData_int</span><span class="token punctuation">(</span>b<span class="token punctuation">,</span> N <span class="token operator">*</span> N<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">memset</span><span class="token punctuation">(</span>c_cpu<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> N <span class="token operator">*</span> N<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">memset</span><span class="token punctuation">(</span>c_gpu<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> N <span class="token operator">*</span> N<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">memset</span><span class="token punctuation">(</span>c_gpu_opt<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> N <span class="token operator">*</span> N<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    timeStart <span class="token operator">=</span> <span class="token function">cpuSecond</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">matrixMulCPU</span><span class="token punctuation">(</span> a<span class="token punctuation">,</span> b<span class="token punctuation">,</span> c_cpu <span class="token punctuation">)</span><span class="token punctuation">;</span>
+    timeElaps <span class="token operator">=</span> <span class="token number">1000</span> <span class="token operator">*</span> <span class="token punctuation">(</span><span class="token function">cpuSecond</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> timeStart<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"cpu matrix mul time: %f ms\n"</span><span class="token punctuation">,</span> timeElaps<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// test kernel 1: matrixMulGPU</span>
+    dim3 <span class="token function">threads_per_block</span><span class="token punctuation">(</span><span class="token number">16</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    dim3 <span class="token function">number_of_blocks</span><span class="token punctuation">(</span>N <span class="token operator">/</span> threads_per_block<span class="token punctuation">.</span>x<span class="token punctuation">,</span> N <span class="token operator">/</span> threads_per_block<span class="token punctuation">.</span>y<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    timeStart <span class="token operator">=</span> <span class="token function">cpuSecond</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    matrixMulGPU <span class="token operator">&lt;&lt;</span><span class="token operator">&lt;</span> number_of_blocks<span class="token punctuation">,</span> threads_per_block <span class="token operator">>></span><span class="token operator">></span> <span class="token punctuation">(</span> a<span class="token punctuation">,</span> b<span class="token punctuation">,</span> c_gpu <span class="token punctuation">)</span><span class="token punctuation">;</span>
+    timeElaps <span class="token operator">=</span> <span class="token number">1000</span> <span class="token operator">*</span> <span class="token punctuation">(</span><span class="token function">cpuSecond</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> timeStart<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">cudaDeviceSynchronize</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"gpu matrix mul time: %f ms\n"</span><span class="token punctuation">,</span> timeElaps<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">check</span><span class="token punctuation">(</span>c_cpu<span class="token punctuation">,</span> c_gpu<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token comment">// test kernel 2: matrixMulGPU optimize</span>
+    timeStart <span class="token operator">=</span> <span class="token function">cpuSecond</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    matrixGPU_tile <span class="token operator">&lt;&lt;</span><span class="token operator">&lt;</span> number_of_blocks<span class="token punctuation">,</span> threads_per_block <span class="token operator">>></span><span class="token operator">></span> <span class="token punctuation">(</span> a<span class="token punctuation">,</span> b<span class="token punctuation">,</span> c_gpu_opt <span class="token punctuation">)</span><span class="token punctuation">;</span>
+    timeElaps <span class="token operator">=</span> <span class="token number">1000</span> <span class="token operator">*</span> <span class="token punctuation">(</span><span class="token function">cpuSecond</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> timeStart<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">cudaDeviceSynchronize</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"gpu matrix mul time: %f ms\n"</span><span class="token punctuation">,</span> timeElaps<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">check</span><span class="token punctuation">(</span>c_cpu<span class="token punctuation">,</span> c_gpu_opt<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// Free all our allocated memory</span>
+    <span class="token function">cudaFree</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token function">cudaFree</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">cudaFree</span><span class="token punctuation">(</span> c_cpu <span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token function">cudaFree</span><span class="token punctuation">(</span> c_gpu <span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token function">cudaFree</span><span class="token punctuation">(</span> c_gpu_opt <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="CUDNN"><a href="#CUDNN" class="headerlink" title="CUDNN"></a>CUDNN</h3><p>使用cuDNN实现sigmoid函数</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;cuda_runtime.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;cudnn.h></span></span>
+
+<span class="token comment">/**
+ * Minimal example to apply sigmoid activation on a tensor
+ * using cuDNN.
+ * https://docs.nvidia.com/deeplearning/cudnn/latest/api/cudnn-graph-library.html#
+ * https://docs.nvidia.com/deeplearning/cudnn/latest/api/cudnn-ops-library.html#cudnnactivationforward
+ **/</span>
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token keyword">int</span> argc<span class="token punctuation">,</span> <span class="token keyword">char</span><span class="token operator">*</span><span class="token operator">*</span> argv<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token comment">// get gpu info</span>
+    <span class="token keyword">int</span> numGPUs<span class="token punctuation">;</span>
+    <span class="token function">cudaGetDeviceCount</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>numGPUs<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"Found "</span> <span class="token operator">&lt;&lt;</span> numGPUs <span class="token operator">&lt;&lt;</span> <span class="token string">" GPUs."</span> <span class="token operator">&lt;&lt;</span> std<span class="token operator">::</span>endl<span class="token punctuation">;</span>
+    <span class="token function">cudaSetDevice</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// use GPU0</span>
+    <span class="token keyword">int</span> device<span class="token punctuation">;</span>
+    <span class="token keyword">struct</span> <span class="token class-name">cudaDeviceProp</span> devProp<span class="token punctuation">;</span>
+    <span class="token function">cudaGetDevice</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>device<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">cudaGetDeviceProperties</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>devProp<span class="token punctuation">,</span> device<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"Compute capability:"</span> <span class="token operator">&lt;&lt;</span> devProp<span class="token punctuation">.</span>major <span class="token operator">&lt;&lt;</span> <span class="token string">"."</span> <span class="token operator">&lt;&lt;</span> devProp<span class="token punctuation">.</span>minor <span class="token operator">&lt;&lt;</span> std<span class="token operator">::</span>endl<span class="token punctuation">;</span>
+
+    <span class="token class-name">cudnnHandle_t</span> handle_<span class="token punctuation">;</span>
+    <span class="token function">cudnnCreate</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>handle_<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"Created cuDNN handle"</span> <span class="token operator">&lt;&lt;</span> std<span class="token operator">::</span>endl<span class="token punctuation">;</span>
+
+    <span class="token comment">// create the tensor descriptor</span>
+    <span class="token class-name">cudnnDataType_t</span> dtype <span class="token operator">=</span> CUDNN_DATA_FLOAT<span class="token punctuation">;</span>
+    <span class="token class-name">cudnnTensorFormat_t</span> format <span class="token operator">=</span> CUDNN_TENSOR_NCHW<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> n <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">,</span> c <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">,</span> h <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">,</span> w <span class="token operator">=</span> <span class="token number">10</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> NUM_ELEMENTS <span class="token operator">=</span> n<span class="token operator">*</span>c<span class="token operator">*</span>h<span class="token operator">*</span>w<span class="token punctuation">;</span>
+    <span class="token class-name">cudnnTensorDescriptor_t</span> x_desc<span class="token punctuation">;</span>
+    <span class="token function">cudnnCreateTensorDescriptor</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>x_desc<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">cudnnSetTensor4dDescriptor</span><span class="token punctuation">(</span>x_desc<span class="token punctuation">,</span> format<span class="token punctuation">,</span> dtype<span class="token punctuation">,</span> n<span class="token punctuation">,</span> c<span class="token punctuation">,</span> h<span class="token punctuation">,</span> w<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token comment">// create the tensor</span>
+    <span class="token keyword">float</span> <span class="token operator">*</span>x<span class="token punctuation">;</span>
+
+    <span class="token comment">// 创建 Unified Memory，这样cpu和memory都可以使用</span>
+    <span class="token function">cudaMallocManaged</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>x<span class="token punctuation">,</span> NUM_ELEMENTS <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">float</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span>i<span class="token operator">&lt;</span>NUM_ELEMENTS<span class="token punctuation">;</span>i<span class="token operator">++</span><span class="token punctuation">)</span> x<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> i <span class="token operator">*</span> <span class="token number">1.00f</span><span class="token punctuation">;</span>
+    std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"Original array: "</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span>i<span class="token operator">&lt;</span>NUM_ELEMENTS<span class="token punctuation">;</span>i<span class="token operator">++</span><span class="token punctuation">)</span> std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> x<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&lt;&lt;</span> <span class="token string">" "</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// create activation function descriptor</span>
+    <span class="token keyword">float</span> alpha<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token number">1</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+    <span class="token keyword">float</span> beta<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token number">0.0</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+    <span class="token class-name">cudnnActivationDescriptor_t</span> sigmoid_activation<span class="token punctuation">;</span>
+    <span class="token class-name">cudnnActivationMode_t</span> mode <span class="token operator">=</span> CUDNN_ACTIVATION_SIGMOID<span class="token punctuation">;</span>
+    <span class="token class-name">cudnnNanPropagation_t</span> prop <span class="token operator">=</span> CUDNN_NOT_PROPAGATE_NAN<span class="token punctuation">;</span>
+    <span class="token function">cudnnCreateActivationDescriptor</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>sigmoid_activation<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">cudnnSetActivationDescriptor</span><span class="token punctuation">(</span>sigmoid_activation<span class="token punctuation">,</span> mode<span class="token punctuation">,</span> prop<span class="token punctuation">,</span> <span class="token number">0.0f</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">cudnnActivationForward</span><span class="token punctuation">(</span>
+        handle_<span class="token punctuation">,</span>
+        sigmoid_activation<span class="token punctuation">,</span>
+        alpha<span class="token punctuation">,</span>
+        x_desc<span class="token punctuation">,</span>
+        x<span class="token punctuation">,</span>
+        beta<span class="token punctuation">,</span>
+        x_desc<span class="token punctuation">,</span>
+        x
+    <span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token function">cudnnDestroy</span><span class="token punctuation">(</span>handle_<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> std<span class="token operator">::</span>endl <span class="token operator">&lt;&lt;</span> <span class="token string">"Destroyed cuDNN handle."</span> <span class="token operator">&lt;&lt;</span> std<span class="token operator">::</span>endl<span class="token punctuation">;</span>
+    std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"New array: "</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span>i<span class="token operator">&lt;</span>NUM_ELEMENTS<span class="token punctuation">;</span>i<span class="token operator">++</span><span class="token punctuation">)</span> std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> x<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&lt;&lt;</span> <span class="token string">" "</span><span class="token punctuation">;</span>
+    std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> std<span class="token operator">::</span>endl<span class="token punctuation">;</span>
+    <span class="token function">cudaFree</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>cuDNN文档： <a target="_blank" rel="noopener" href="https://docs.nvidia.com/deeplearning/cudnn/latest/api/cudnn-graph-library.html">https://docs.nvidia.com/deeplearning/cudnn/latest/api/cudnn-graph-library.html</a></p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a target="_blank" rel="noopener" href="https://qiankunli.github.io/2021/08/18/gpu.html">GPU入门 | 李乾坤的博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/98416987">CUDA编程入门（五）更高效的并行归约算法 - ZihaoZhao的文章 - 知乎</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/123170285">理解CUDA中的thread,block,grid和warp - 三七和酒的文章 - 知乎</a></p>
+<p><a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html">CUDA C++ Programming Guide</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/468048296">CUDNN（1） - 初步体验 - 颜挺帅的文章 - 知乎</a></p>
+<p>《分布式与并行计算技术》 刘莹</p>
+<p>《计算机体系结构》 张科  刘珂  高婉铃</p>
 
                 
             </div>
@@ -1012,7 +1703,7 @@ __global__ <span class="token keyword">void</span> <span class="token function">
             <br>
             
                 &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
-                        class="white-color">113.9k</span>
+                        class="white-color">117.1k</span>
             
             
             
